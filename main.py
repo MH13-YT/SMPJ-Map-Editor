@@ -199,7 +199,7 @@ class JamboreeMapEditor(tk.Tk):
 
         self.geometry(f"{APP_WIDTH}x{APP_HEIGHT}")
         self.resizable(False, False)
-        self.title("Jamboree Map Item Editor")
+        self.title("Super Mario Party Jamboree : Map Item Editor")
 
         # Séparation des variables globales en trois variables
         self.item_shop_data = {}
