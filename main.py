@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import tkinter as tk
@@ -258,10 +259,28 @@ class JamboreeMapEditor(tk.Tk):
             # Afficher un message d'alerte si le dossier n'existe pas
             messagebox.showerror("Error", f"The folder bd~bd00.nx cannot be found, please extract the contents of bd~bd00.nx.bea from Switch Toolbox into a folder named bd~bd00.nx and place it on the same folder than {app_extension}")
         else:
+            errors = []
+            for i in range(1, 8):
+                for file in [f"bd00_ItemBag_Map{str(i).zfill(2)}.json", f"bd00_ItemMass_Map{str(i).zfill(2)}.json", f"bd00_ItemShop_Map{str(i).zfill(2)}.json"]:
+                    file_path = os.path.join(BASE_PATH, file)
+                    try:
+                        with open(file_path, 'r', encoding='utf-8-sig') as json_file:
+                            json.load(json_file)
+                    except json.JSONDecodeError as error:
+                        # Ajouter le message d'erreur à la liste
+                        errors.append(f"Cannot Read File {file}:\n {error}\n")
+
+                # Vérifier s'il y a des erreurs et les afficher dans une boîte de message
+            if errors:
+                error_message = "\n".join(errors)
+                messagebox.showerror("Error", f"The following errors occurred:\n{error_message}")
+                return
+                   
             for tab in self.notebook.tabs():
                 tab_widget = self.notebook.nametowidget(tab)
                 tab_widget.load_data()
             self.save_button.config(state='normal')
+            self.load_button.config(state='disabled')
             messagebox.showinfo("Data Loaded", "The bd~bd00.nx folder has been loaded, good editing")
 
     def save_data(self):
