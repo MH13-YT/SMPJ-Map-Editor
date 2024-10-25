@@ -126,7 +126,7 @@ def load_item_data(map_number, data_type, base_path):
     file_name = f"bd00_{data_type}_{map_number}.json"
     file_path = os.path.join(base_path, file_name)
     try:
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding='utf-8-sig') as f:
             data = json.load(f)
             return data.get(map_number)
     except FileNotFoundError:
@@ -170,7 +170,7 @@ def load_item_mapdata(base_path,map_name):
 def save_item_mapdata(base_path,item_bag_data,item_mass_data,map_name):
     file_name = f"bd00_ItemBag_{map_name}.json"
     file_path = os.path.join(base_path, file_name)
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w', encoding='utf-8-sig') as f:
         file_data = {}
         file_data[f"{map_name}"] = []
         file_data[f"{map_name}"] = item_bag_data
@@ -179,7 +179,7 @@ def save_item_mapdata(base_path,item_bag_data,item_mass_data,map_name):
     # Sauvegarde des données ItemMass
     file_name = f"bd00_ItemMass_{map_name}.json"
     file_path = os.path.join(base_path, file_name)
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w', encoding='utf-8-sig') as f:
         file_data = {}
         file_data[f"{map_name}"] = []
         file_data[f"{map_name}"] = item_mass_data

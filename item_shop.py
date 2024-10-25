@@ -134,7 +134,7 @@ def save_itemshop_mapdata(BASE_PATH, map_name, data):
     file_data = {}
     file_data[f"{map_name}"] = []
     file_data[f"{map_name}"] = save_itemshop_map_json(data)
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding='utf-8-sig') as f:
         json.dump(file_data, f)
 
 
@@ -143,13 +143,14 @@ def load_itemshop_mapdata(BASE_PATH, map_name):
         file_name = f"bd00_ItemShop_{map_name}.json"
         file_path = os.path.join(BASE_PATH, file_name)
         try:
-            with open(file_path, "r") as f:
+            with open(file_path, "r", encoding='utf-8-sig') as f:
                 return json.load(f)[f"{map_name}"]
         except FileNotFoundError:
             print(f"File not found : {file_name}")
             return []
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as error:
             print(f"Error occurred while reading file : {file_name}")
+            print(error)
             return []
 
     def init_itemshop_slots():
