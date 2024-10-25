@@ -28,10 +28,10 @@ class ShopEditor:
         phase_frame.pack(fill="x", padx=5, pady=5)
 
         # Création des 5 slots pour la phase
-        for i in range(1, 6):
+        for i in range(1, 7):
             # Encadrer chaque slot et définir la largeur du slot à 28
-            slot_frame = ttk.LabelFrame(phase_frame, text=f"Slot {i}", width=28)
-            slot_frame.grid(row=0, column=i - 1, padx=5, pady=5, sticky="nsew")
+            slot_frame = ttk.LabelFrame(phase_frame, text=f"Slot {i}", width=20)
+            slot_frame.grid(row=0, column=i - 1, padx=4, pady=4, sticky="nsew")
 
             # Configurer une grille dans le slot_frame pour centrer les widgets
             slot_frame.grid_columnconfigure(0, weight=1)
@@ -39,30 +39,30 @@ class ShopEditor:
             # Configurer les widgets avec une taille de 10
             self.widgets[phase_name][f"slot{i}"] = {
                 "item": ttk.Combobox(
-                    slot_frame, values=combined_items, width=20, justify="center"
+                    slot_frame, values=combined_items, width=18, justify="center"
                 ),
                 "count": ttk.Combobox(
-                    slot_frame, values=[1, 2], width=20, justify="center"
+                    slot_frame, values=[1, 2], width=18, justify="center"
                 ),
                 "price": tk.Spinbox(
-                    slot_frame, from_=0, to=999, width=20, justify="center"
+                    slot_frame, from_=0, to=999, width=18, justify="center"
                 ),
             }
 
             # Ajouter les widgets à la grille et les centrer
             self.widgets[phase_name][f"slot{i}"]["item"].grid(
-                row=0, column=0, padx=29, pady=5, sticky="ew"
+                row=0, column=0, padx=18, pady=5, sticky="ew"
             )
             self.widgets[phase_name][f"slot{i}"]["count"].grid(
-                row=1, column=0, padx=29, pady=5, sticky="ew"
+                row=1, column=0, padx=18, pady=5, sticky="ew"
             )
             self.widgets[phase_name][f"slot{i}"]["price"].grid(
-                row=2, column=0, padx=29, pady=5, sticky="ew"
+                row=2, column=0, padx=18, pady=5, sticky="ew"
             )
 
     def load_shop_data(self, phase_name, data_store):
         self.data_store = data_store
-        for slot_num in range(1, 6):
+        for slot_num in range(1, 7):
             # Récupérer les données du slot avec vérification à chaque étape
             shop_data = self.data_store.get(self.shop_name)
             phase_data = shop_data.get(phase_name)
@@ -83,7 +83,7 @@ class ShopEditor:
                 )
 
     def save_shop_data(self, phase_name):
-        for slot_num in range(1, 6):
+        for slot_num in range(1, 7):
             self.data_store[self.shop_name][phase_name][f"slot{slot_num}"] = {
                 "item": self.widgets[phase_name][f"slot{slot_num}"]["item"].get(),
                 "count": self.widgets[phase_name][f"slot{slot_num}"]["count"].get(),
@@ -106,13 +106,14 @@ def save_itemshop_mapdata(BASE_PATH, map_name, data):
                     data[f"{shop_name}Shop"][f"P{p}"][f"slot2"]["item"] == "Empty" and 
                     data[f"{shop_name}Shop"][f"P{p}"][f"slot3"]["item"] == "Empty" and 
                     data[f"{shop_name}Shop"][f"P{p}"][f"slot4"]["item"] == "Empty" and 
-                    data[f"{shop_name}Shop"][f"P{p}"][f"slot5"]["item"] == "Empty"
+                    data[f"{shop_name}Shop"][f"P{p}"][f"slot5"]["item"] == "Empty" and 
+                    data[f"{shop_name}Shop"][f"P{p}"][f"slot6"]["item"] == "Empty"
                 ):
                     print(f"No Item in {map_name} {shop_name}Shop in Phase {p}, Replacing 1st empty slot with 'Stone'")
                     data_file.append(
                         {"Phase": p, "Type": type_value, "Item": "Stone", "Count": 1, "Price": 0},
                     )
-                for s in range(1, 6):
+                for s in range(1, 7):
                     if data[f"{shop_name}Shop"][f"P{p}"][f"slot{s}"]["item"] != "Empty":
                         data_file.append(
                             {
@@ -160,6 +161,7 @@ def load_itemshop_mapdata(BASE_PATH, map_name):
             "slot3": {"item": "Empty", "count": "0", "price": "0"},
             "slot4": {"item": "Empty", "count": "0", "price": "0"},
             "slot5": {"item": "Empty", "count": "0", "price": "0"},
+            "slot6": {"item": "Empty", "count": "0", "price": "0"},
         }
 
     def read_itemshops(item_shop_data):
