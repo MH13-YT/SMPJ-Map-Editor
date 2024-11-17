@@ -5,7 +5,7 @@ from tkinter import Tk, ttk
 import tkinter as tk
 
 
-class ShopEditor:
+class ItemShopEditor:
     def __init__(
         self, parent, shop_name, data_store, map_name, general_items, map_items
     ):
@@ -15,12 +15,14 @@ class ShopEditor:
 
         map_specific_items = map_items[self.map_name]["items"]
         combined_items = ["Empty"] + map_specific_items + general_items
+        combined_items_pro = ["Empty"] +  map_specific_items + general_items
+        combined_items_pro.remove("ItemBag")
 
         self.widgets = {"P0": {}, "P1": {}, "P2": {}}
 
         self.create_phase(parent, "Standard", "P0", combined_items)
         self.create_phase(parent, "Standard (5 Last Turns)", "P1", combined_items)
-        self.create_phase(parent, "Pro Mode", "P2", combined_items)
+        self.create_phase(parent, "Pro Mode", "P2", combined_items_pro)
 
     def create_phase(self, parent, phase_label, phase_name, combined_items):
         # Créer un frame pour chaque phase
@@ -130,7 +132,7 @@ def save_itemshop_mapdata(BASE_PATH, map_name, data):
                         )
         return data_file
 
-    file_name = f"bd00_ItemShop_{map_name}.json"
+    file_name = os.path.join("bd~bd00.nx", "bd", "bd00", "data",f"bd00_ItemShop_{map_name}.json")
     file_path = os.path.join(BASE_PATH, file_name)
     file_data = {}
     file_data[f"{map_name}"] = []
@@ -141,7 +143,7 @@ def save_itemshop_mapdata(BASE_PATH, map_name, data):
 
 def load_itemshop_mapdata(BASE_PATH, map_name):
     def load_itemshop_map_json(map_name, BASE_PATH):
-        file_name = f"bd00_ItemShop_{map_name}.json"
+        file_name = os.path.join("bd~bd00.nx", "bd", "bd00", "data",f"bd00_ItemShop_{map_name}.json")
         file_path = os.path.join(BASE_PATH, file_name)
         try:
             with open(file_path, "r", encoding='utf-8-sig') as f:

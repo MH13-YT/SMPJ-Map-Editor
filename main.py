@@ -1,299 +1,202 @@
 import json
 import os
 import sys
+import hashlib
+import shutil
+import re
 import tkinter as tk
-from tkinter import ttk, messagebox
-from item_shop import ShopEditor, load_itemshop_mapdata, save_itemshop_mapdata
-from item_list_manager import ItemListManager, load_item_mapdata, save_item_mapdata
+from tkinter import ttk, messagebox, simpledialog
 
-# Dimensions de l'application
-APP_WIDTH = 1100
-APP_HEIGHT = 850
+from editor import JamboreeMapEditor
 
-# Obtenir le chemin du répertoire où l'exécutable est situé
-if getattr(sys, 'frozen', False):
-    # Si le script est exécuté sous forme d'exécutable (.exe)
-    application_path = os.path.dirname(sys.executable)
-    app_extension = "the executable"
-else:
-    # Si le script est exécuté en tant que script Python
-    application_path = os.path.dirname(os.path.abspath(__file__))
-    app_extension = "main.py"
-# Chemin du dossier contenant les fichiers JSON
-BASE_PATH = os.path.join(application_path,"bd~bd00.nx", "bd", "bd00", "data")
+# Define the base path (BASE_PATH) depending on the execution environment
+if getattr(sys, 'frozen', False):  # Packaged application using PyInstaller
+    BASE_PATH = sys._MEIPASS
+else:  # Directly executed Python script
+    BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-# Lot d'items général
-general_items = [
-    "Stone", #Lodestone
-    "ItemBag", #Sac A Objet
-    "Kinoko", #Champignon
-    "ManyKinoko", #Coupon Champignon
-    "SlowKinoko", #Dé Tronqué
-    "ManySlowKinoko", #Coupon Dé Tronqué
-    "SuperSlowKinoko", #Lot Dé Tronqué
-    "JustDice", #Dé Pipé
-    "DoubleDice", #Double Dé
-    "TripleDice", #Triple Dé
-    "GoldDoubleDice", #Double Dé Doré
-    "GoldTripleDice", #Triple Dé Doré
-    "NormalPipe", #Tuyau
-    "GoldPipe", #Tuyau Doré
-    "WarpBox", #Boite de Teleportation
-    "ShoppingPipe", #Boite de Teleportation Shop
-    "ChangeBox", #Miroir Echange
-    "SuperChangeBox", #Super Miroir Echange
-    "KoopaPhone", #Telephone Bowser
-    "ShoppingPhone", #Telephone KoopaShop
-    "StealBox", #Coffre Pillage
-    "DuelGrove", #Gant de Duel
-    "SuperDuelGrove", #Super Gant de Duel
-    "10CoinTakeMass", #Piege 10 Pieces
-    "HalfCoinTakeMass", #Piege mi pieces
-    "StarTakeMass", #Piege 1 Etoile
-    "TereBell", #Cloche Boo
-    "WanwanWhistle", #Sifflet Chomp
-    "HiddenBlockCard", #Carte Bloc Caché
-    ]
+# Paths to specific directories
+WORKSPACE_DIR = os.path.join(BASE_PATH, "workspace")
+CORE_DIR = os.path.join(BASE_PATH, "CORE")
 
-# Noms et lots d'items spécifiques par map
-map_items = {
-    "Map01": {
-        "name": "Goomba Lagoon", 
-        "items": [
-            "Shell" #Conque des Marais
-            ]
-        },
-    "Map02": {
-        "name": "Western Land", 
-        "items": [
-            "Key" #Clé Squelette
-            ]},
-    "Map03": {
-        "name": "Mario's Rainbow Castle",
-        "items": [
-                "Roulette" #Tour
-                ]
-            },
-    "Map04": {
-        "name": "Roll 'em Raceway",
-        "items": [
-            "MachDice" #Dé 4
-            ]
-        },
-    "Map05": {
-        "name": "Rainbow Galleria", 
-        "items": [
-            "PriceHikeSticker" #Coupon Inflation
-            ]
-        },
-    "Map06": {
-        "name": "King Bowser's Keep",
-        "items": [
-            "ConveyorSwitch", #Switch
-            "Key",  #Clé Squelette
-        ],
-    },
-    "Map07": {
-        "name": "Mega Wiggler's Tree Party", 
-        "items": [
-            "AlarmClock"  #Cloche Wiggler
-            ]
-        },
-}
+# Expected checksum for the CORE directory
+EXPECTED_CORE_CHECKSUM = "c7486a455de3573ec3eb5b8450840940866e06395ef67bea41d3aebaab1221db"
 
 
-class MapTab(tk.Frame):
-    def __init__(self, parent, map_name, item_shop_data, item_bag_data, item_mass_data):
-        super().__init__(parent)
-        self.item_shop_data = item_shop_data
-        self.item_bag_data = item_bag_data
-        self.item_mass_data = item_mass_data
-        self.map_name = map_name.replace(" ", "_")
+def calculate_checksum_for_directory(directory):
+    """Calculate the SHA-256 checksum for a directory (recursively)."""
+    sha256 = hashlib.sha256()
+    for root, _, files in sorted(os.walk(directory)):
+        for file in sorted(files):  # Sort to ensure deterministic order
+            file_path = os.path.join(root, file)
+            with open(file_path, "rb") as f:
+                while chunk := f.read(8192):
+                    sha256.update(chunk)
+    return sha256.hexdigest()
 
-        # Notebook pour Koopa et Kamek Shops
-        self.shop_notebook = ttk.Notebook(self)
-        self.shop_notebook.pack(fill="both", expand=True)
-
-        koopa_tab = ttk.Frame(self.shop_notebook)
-        self.shop_notebook.add(koopa_tab, text="Koopa Shop")
-        self.koopa_shop = ShopEditor(
-            koopa_tab,
-            "KoopaShop",
-            self.item_shop_data,
-            self.map_name,
-            general_items,
-            map_items,
+def correct_and_verify_core_integrity():
+    """Correct JSON files and verify the integrity of the CORE directory by comparing its checksum."""
+    if not os.path.exists(CORE_DIR):
+        os.mkdir(CORE_DIR)
+        os.mkdir(os.path.join(CORE_DIR,"bd~bd00.nx"))
+        os.mkdir(os.path.join(CORE_DIR,"bd~bd01.nx"))
+        os.mkdir(os.path.join(CORE_DIR,"bd~bd02.nx"))
+        os.mkdir(os.path.join(CORE_DIR,"bd~bd03.nx"))
+        os.mkdir(os.path.join(CORE_DIR,"bd~bd04.nx"))
+        os.mkdir(os.path.join(CORE_DIR,"bd~bd05.nx"))
+        os.mkdir(os.path.join(CORE_DIR,"bd~bd06.nx"))
+        os.mkdir(os.path.join(CORE_DIR,"bd~bd07.nx"))
+        raise FileNotFoundError(
+            f"The CORE directory is missing.\n"
+            f"SMPJ Map Item Editor created this folder for you.\n"
         )
 
-        kamek_tab = ttk.Frame(self.shop_notebook)
-        self.shop_notebook.add(kamek_tab, text="Kamek Shop")
-        self.kamek_shop = ShopEditor(
-            kamek_tab,
-            "KamekShop",
-            self.item_shop_data,
-            self.map_name,
-            general_items,
-            map_items,
-        )
+    # Correct JSON files in the CORE directory recursively
+    for root, _, files in os.walk(CORE_DIR):
+        for file in files:
+            if file.endswith(".json"):
+                file_path = os.path.join(root, file)
+                try:
+                    # Attempt to load the JSON file
+                    with open(file_path, "r", encoding="utf-8-sig") as json_file:
+                        content = json_file.read()
 
-        # Ajout des sections ItemBag et ItemMass
-        self.item_bag = ItemListManager(
-            self,
-            "Item Bag",
-            "ItemBag",
-            self.item_bag_data,
-            self.map_name,
-            APP_WIDTH,
-            general_items,
-            map_items,
-            True,
-            False,
-        )
-        self.item_mass = ItemListManager(
-            self,
-            "Item Mass",
-            "ItemMass",
-            self.item_mass_data,
-            self.map_name,
-            APP_WIDTH,
-            general_items,
-            map_items,
-            False,
-            True,
-        )
+                    # Remove trailing commas from JSON arrays or objects
+                    content_fixed = re.sub(r",\s*(\]|\})", r"\1", content)
 
-    def load_data(self):
-        self.item_shop_data = load_itemshop_mapdata(BASE_PATH, self.map_name)
-        self.koopa_shop.load_shop_data("P0", self.item_shop_data)
-        self.koopa_shop.load_shop_data("P1", self.item_shop_data)
-        self.koopa_shop.load_shop_data("P2", self.item_shop_data)
-        self.kamek_shop.load_shop_data("P0", self.item_shop_data)
-        self.kamek_shop.load_shop_data("P1", self.item_shop_data)
-        self.kamek_shop.load_shop_data("P2", self.item_shop_data)
-        # Charger les données pour ItemBag et ItemMass
-        self.item_bag_data, self.item_mass_data = load_item_mapdata(
-            BASE_PATH, self.map_name
-        )
-        # Charger les items pour les sections ItemBag et ItemMass
-        self.item_bag.load_items(self.item_bag_data)
-        self.item_mass.load_items(self.item_mass_data)
+                    # Remove any extra data after the JSON structure
+                    content_fixed = re.sub(r"(?<=\})(?=\s*,)", r"", content_fixed)  # Remove extra commas after closing braces
+                    content_fixed = re.sub(r"\}[^}]*$", r"}", content_fixed)  # Remove anything after the last closing brace
 
-    def save_data(self):
-        self.item_shop_data = self.koopa_shop.save_shop_data("P0")
-        self.item_shop_data = self.koopa_shop.save_shop_data("P1")
-        self.item_shop_data = self.koopa_shop.save_shop_data("P2")
-        self.item_shop_data = self.kamek_shop.save_shop_data("P0")
-        self.item_shop_data = self.kamek_shop.save_shop_data("P1")
-        self.item_shop_data = self.kamek_shop.save_shop_data("P2")
-        self.item_bag_data = self.item_bag.save_items()
-        self.item_mass_data = self.item_mass.save_items()
-        save_item_mapdata(
-            BASE_PATH, self.item_bag_data, self.item_mass_data, self.map_name
-        )
-        save_itemshop_mapdata(BASE_PATH, self.map_name, self.item_shop_data)
-
-
-class JamboreeMapEditor(tk.Tk):
-    def __init__(self):
-        super().__init__()
-
-        self.geometry(f"{APP_WIDTH}x{APP_HEIGHT}")
-        self.resizable(False, False)
-        self.title("Super Mario Party Jamboree : Map Item Editor")
-
-        # Séparation des variables globales en trois variables
-        self.item_shop_data = {}
-        self.item_bag_data = {}
-        self.item_mass_data = {}
-
-        style = ttk.Style(self)
-        style.configure("TNotebook", tabposition="n")
-        style.configure(
-            "TNotebook.Tab", width=APP_WIDTH // 7, padding=[5, 5], anchor="center"
-        )
-
-        self.notebook = ttk.Notebook(self, style="TNotebook")
-        self.notebook.pack(expand=1, fill="both")
-
-        for i in range(1, 8):
-            map_name = f"Map0{i}"
-            tab = MapTab(
-                self.notebook,
-                map_name,
-                self.item_shop_data,
-                self.item_bag_data,
-                self.item_mass_data,
-            )
-            self.notebook.add(tab, text=map_items[map_name]["name"])
-
-            self.item_shop_data[map_name] = {
-                "KoopaShop": {"P0": {}, "P1": {}, "P2": {}},
-                "KamekShop": {"P0": {}, "P1": {}, "P2": {}},
-            }
-            self.item_bag_data[map_name] = []
-            self.item_mass_data[map_name] = []
-
-        # Frame for the load and save buttons (stacked vertically)
-        self.button_frame = tk.Frame(self, width=APP_WIDTH)
-        self.button_frame.pack(side="left", padx=10, pady=10)
-
-        self.load_button = tk.Button(
-            self.button_frame,
-            text="Load Maps Data",
-            command=self.load_data,
-            width=APP_WIDTH,
-        )
-        self.load_button.pack(pady=5)
-
-        self.save_button = tk.Button(
-            self.button_frame,
-            text="Save Map Data",
-            command=self.save_data,
-            width=APP_WIDTH,
-            state="disabled"
-        )
-        self.save_button.pack(pady=5)
-
-    def load_data(self):
-        if not os.path.exists(BASE_PATH):
-            # Afficher un message d'alerte si le dossier n'existe pas
-            messagebox.showerror("Error", f"The folder bd~bd00.nx cannot be found, please extract the contents of bd~bd00.nx.bea from Switch Toolbox into a folder named bd~bd00.nx and place it on the same folder than {app_extension}")
-        else:
-            errors = []
-            for i in range(1, 8):
-                for file in [f"bd00_ItemBag_Map{str(i).zfill(2)}.json", f"bd00_ItemMass_Map{str(i).zfill(2)}.json", f"bd00_ItemShop_Map{str(i).zfill(2)}.json"]:
-                    file_path = os.path.join(BASE_PATH, file)
+                    # Attempt to load the corrected content into JSON
                     try:
-                        with open(file_path, 'r', encoding='utf-8-sig') as json_file:
-                            json.load(json_file)
+                        json_data = json.loads(content_fixed)
                     except json.JSONDecodeError as error:
-                        # Ajouter le message d'erreur à la liste
-                        errors.append(f"Cannot Read File {file}:\n {error}\n")
+                        raise ValueError(
+                            f"Failed to load JSON file after correction: {file_path}\n"
+                            f"Error: {error}"
+                        )
 
-                # Vérifier s'il y a des erreurs et les afficher dans une boîte de message
-            if errors:
-                error_message = "\n".join(errors)
-                messagebox.showerror("Error", f"The following errors occurred:\n{error_message}")
-                return
-                   
-            for tab in self.notebook.tabs():
-                tab_widget = self.notebook.nametowidget(tab)
-                tab_widget.load_data()
-            self.save_button.config(state='normal')
-            self.load_button.config(state='disabled')
-            messagebox.showinfo("Data Loaded", "The bd~bd00.nx folder has been loaded, good editing")
+                    # Save the corrected JSON data back to the file
+                    with open(file_path, "w", encoding="utf-8-sig") as json_file:
+                        json.dump(json_data, json_file, indent=4, ensure_ascii=False)
 
-    def save_data(self):
-        if not os.path.exists(BASE_PATH):
-            # Afficher un message d'alerte si le dossier n'existe pas
-            messagebox.showerror("Error", f"The folder bd~bd00.nx cannot be found, please extract the contents of bd~bd00.nx.bea from Switch Toolbox into a folder named bd~bd00.nx and place it on the same folder than {app_extension}")
+                except json.JSONDecodeError as error:
+                    raise ValueError(
+                        f"Failed to correct or load JSON file: {file_path}\n"
+                        f"Error: {error}"
+                    )
+
+    # Calculate checksum
+    sha256 = hashlib.sha256()
+    for root, _, files in sorted(os.walk(CORE_DIR)):
+        for file in sorted(files):
+            file_path = os.path.join(root, file)
+            with open(file_path, "rb") as f:
+                while chunk := f.read(8192):
+                    sha256.update(chunk)
+    calculated_checksum = sha256.hexdigest()
+
+    if calculated_checksum != EXPECTED_CORE_CHECKSUM:
+        messagebox.showerror("Original file integrity check failed",
+            f"SMPJ Map Editor needs files available in the game romfs in an uncompressed state to work\n"
+            f"The automatic game files integrity check failed (Files are missing or damaged)\n"
+            "\n"              
+            f"To correctly integrate the game files into this folder.\n"
+            f"- Use Switch Toolbox to extract bd~bd00.nx.bea to bd~bd07.nx.bea to his related folders on the CORE folder\n"
+            "\n"
+            f"Expected checksum: {EXPECTED_CORE_CHECKSUM}\n"
+            f"Actual checksum: {calculated_checksum}")
+        raise ValueError(
+            f"Original file integrity check failed.\n"
+            f"- Use Switch Toolbox to extract bd~bd00.nx.bea to bd~bd07.nx.bea to his related folders on the CORE folder\n"
+            "\n"
+            f"Expected checksum: {EXPECTED_CORE_CHECKSUM}\n"
+            f"Actual checksum: {calculated_checksum}"
+        )
+
+    print("CORE integrity verification passed.")
+
+
+def ensure_directories():
+    """Create required directories if they don't exist."""
+    os.makedirs(WORKSPACE_DIR, exist_ok=True)
+    correct_and_verify_core_integrity()
+
+
+def create_workspace():
+    """Create a new workspace by copying the contents of CORE."""
+    workspace_name = simpledialog.askstring("Create Workspace", "Enter the name of the new workspace:")
+    if workspace_name:
+        workspace_path = os.path.join(WORKSPACE_DIR, workspace_name)
+        try:
+            if os.path.exists(workspace_path):
+                raise FileExistsError(f"A workspace with this name already exists: {workspace_name}")
+            shutil.copytree(CORE_DIR, workspace_path)
+            messagebox.showinfo("Success", f"Workspace created: {workspace_path}")
+            return workspace_path
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to create the workspace: {e}")
+    return None
+
+
+def main_interface():
+    """Create an integrated interface for creating or loading a workspace."""
+    root = tk.Tk()
+    root.title("SMPJ Map Editor")
+    root.geometry("400x300")
+
+    selected_workspace = tk.StringVar()  # This variable will store the selected workspace name
+
+    def update_workspace_list():
+        """Update the list of available workspaces."""
+        workspaces = [d for d in os.listdir(WORKSPACE_DIR) if os.path.isdir(os.path.join(WORKSPACE_DIR, d))]
+        combobox["values"] = workspaces
+        if workspaces:
+            combobox.set("Select a workspace")
         else:
-            for tab in self.notebook.tabs():
-                tab_widget = self.notebook.nametowidget(tab)
-                tab_widget.save_data()
-            messagebox.showinfo("Data Saved", "The bd~bd00.nx folder has been modified successfuly")
+            combobox.set("No workspace available")
+        return workspaces
+
+    def create_workspace_wrapper():
+        """Create a new workspace and update the list."""
+        if create_workspace():
+            update_workspace_list()
+
+    def load_workspace():
+        """Set the selected workspace and close the interface."""
+        workspace = combobox.get()
+        if workspace in update_workspace_list():
+            selected_workspace.set(workspace)  # Assign the selected workspace to the StringVar
+            root.destroy()  # Close the main interface window
+        else:
+            messagebox.showerror("Error", "Please select a valid workspace.")
+
+    # GUI Elements
+    ttk.Label(root, text="SMPJ Map Editor", font=("Arial", 14)).pack(pady=10)
+    ttk.Button(root, text="Create a New Workspace", command=create_workspace_wrapper).pack(pady=10)
+    ttk.Label(root, text="Or select an existing Workspace:", font=("Arial", 12)).pack(pady=10)
+    
+    combobox = ttk.Combobox(root, state="readonly")  # Combobox to list available workspaces
+    combobox.pack(pady=10, fill=tk.X, padx=20)
+    update_workspace_list()
+
+    ttk.Button(root, text="Load Workspace", command=load_workspace).pack(pady=10)
+
+    root.mainloop()
+
+    # Return the full path to the selected workspace
+    return os.path.join(WORKSPACE_DIR, selected_workspace.get()) if selected_workspace.get() else None
 
 
 if __name__ == "__main__":
-    app = JamboreeMapEditor()
-    app.mainloop()
+    try:
+        ensure_directories()
+        workspace_path = main_interface()
+        if workspace_path:
+            app = JamboreeMapEditor(workspace_path)
+            app.mainloop()
+        else:
+            print("No workspace selected. Exiting.")
+    except Exception as e:
+        print(f"Fatal error: {e}")
