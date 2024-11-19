@@ -158,7 +158,7 @@ class EventEditor:
 
         # Cadre pour les cumuls
         self.cumul_frame = ttk.LabelFrame(
-            self.frame, text="Cumul Rates", width=app_width
+            self.frame, text="Rate Status", width=app_width
         )
         self.cumul_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
@@ -166,7 +166,7 @@ class EventEditor:
         self.rate_labels = {}
         for i, rate in enumerate(["Rate0", "Rate1", "Rate2", "Rate3"]):
             label = ttk.Label(
-                self.cumul_frame, text=f"{rate}: {self.rates_totals[rate]}"
+                self.cumul_frame, text=f"{rate}"
             )
             label.grid(row=i, column=0, padx=5, pady=5, sticky="w")
             self.rate_labels[rate] = label
@@ -244,7 +244,7 @@ class EventEditor:
         self.recalculate_totals()
 
         for entry in self.current_data:
-            display_text = f"{entry['Result']:<25}\t | Rate0: {entry['Rate0']} Rate1: {entry['Rate1']} Rate2: {entry['Rate2']} Rate3: {entry['Rate3']}"
+            display_text = f"Rate0: {str(float(entry['Rate0'])).split(".")[0].rjust(3,"\u2007")}.{str(float(entry['Rate1'])).split(".")[1].ljust(3,"\u2007")}\t Rate1: {str(float(entry['Rate0'])).split(".")[0].rjust(3,"\u2007")}.{str(float(entry['Rate1'])).split(".")[1].ljust(3,"\u2007")}\t Rate2: {str(float(entry['Rate2'])).split(".")[0].rjust(3,"\u2007")}.{str(float(entry['Rate2'])).split(".")[1].ljust(3,"\u2007")}\t Rate3: {str(float(entry['Rate3'])).split(".")[0].rjust(3,"\u2007")}.{str(float(entry['Rate3'])).split(".")[1].ljust(3,"\u2007")}\t | {entry['Result']}"
             self.listbox.insert(tk.END, display_text)
 
         # Mettre à jour les labels d'affichage des cumuls avec les couleurs
