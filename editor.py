@@ -3,10 +3,27 @@ import os
 import tkinter as tk
 from tkinter import ttk, messagebox
 from editor_modules.hidden_block import HiddenBlockEditor
-from editor_modules.item_bag import ItemBagEditor, load_itembag_mapdata, save_itembag_mapdata
-from editor_modules.item_mass import ItemMassEditor, load_itemmass_mapdata, save_itemmass_mapdata
-from editor_modules.item_shop import ItemShopEditor, load_itemshop_mapdata, save_itemshop_mapdata
-from editor_modules.events import EventEditor
+from editor_modules.item_bag import (
+    ItemBagEditor,
+    load_itembag_mapdata,
+    save_itembag_mapdata,
+)
+from editor_modules.item_mass import (
+    ItemMassEditor,
+    load_itemmass_mapdata,
+    save_itemmass_mapdata,
+)
+from editor_modules.item_shop import (
+    ItemShopEditor,
+    load_itemshop_mapdata,
+    save_itemshop_mapdata,
+)
+from editor_modules.events import (
+    EventEditor,
+    EventDataManager,
+    load_event_mapdata,
+    save_event_mapdata,
+)
 from editor_modules.map_layout import MapLayoutEditor
 
 # Dimensions de l'application
@@ -15,91 +32,89 @@ APP_HEIGHT = 850
 
 # Lot d'items général
 general_items = [
-    "Stone", #Lodestone
-    "ItemBag", #Sac A Objet
-    "Kinoko", #Champignon
-    "ManyKinoko", #Coupon Champignon
-    "SlowKinoko", #Dé Tronqué
-    "ManySlowKinoko", #Coupon Dé Tronqué
-    "SuperSlowKinoko", #Lot Dé Tronqué
-    "JustDice", #Dé Pipé
-    "DoubleDice", #Double Dé
-    "TripleDice", #Triple Dé
-    "GoldDoubleDice", #Double Dé Doré
-    "GoldTripleDice", #Triple Dé Doré
-    "NormalPipe", #Tuyau
-    "GoldPipe", #Tuyau Doré
-    "WarpBox", #Boite de Teleportation
-    "ShoppingPipe", #Boite de Teleportation Shop
-    "ChangeBox", #Miroir Echange
-    "SuperChangeBox", #Super Miroir Echange
-    "KoopaPhone", #Telephone Bowser
-    "ShoppingPhone", #Telephone KoopaShop
-    "StealBox", #Coffre Pillage
-    "DuelGrove", #Gant de Duel
-    "SuperDuelGrove", #Super Gant de Duel
-    "10CoinTakeMass", #Piege 10 Pieces
-    "HalfCoinTakeMass", #Piege mi pieces
-    "StarTakeMass", #Piege 1 Etoile
-    "TereBell", #Cloche Boo
-    "WanwanWhistle", #Sifflet Chomp
-    "HiddenBlockCard", #Carte Bloc Caché
-    ]
+    "Stone",  # Lodestone
+    "ItemBag",  # Sac A Objet
+    "Kinoko",  # Champignon
+    "ManyKinoko",  # Coupon Champignon
+    "SlowKinoko",  # Dé Tronqué
+    "ManySlowKinoko",  # Coupon Dé Tronqué
+    "SuperSlowKinoko",  # Lot Dé Tronqué
+    "JustDice",  # Dé Pipé
+    "DoubleDice",  # Double Dé
+    "TripleDice",  # Triple Dé
+    "GoldDoubleDice",  # Double Dé Doré
+    "GoldTripleDice",  # Triple Dé Doré
+    "NormalPipe",  # Tuyau
+    "GoldPipe",  # Tuyau Doré
+    "WarpBox",  # Boite de Teleportation
+    "ShoppingPipe",  # Boite de Teleportation Shop
+    "ChangeBox",  # Miroir Echange
+    "SuperChangeBox",  # Super Miroir Echange
+    "KoopaPhone",  # Telephone Bowser
+    "ShoppingPhone",  # Telephone KoopaShop
+    "StealBox",  # Coffre Pillage
+    "DuelGrove",  # Gant de Duel
+    "SuperDuelGrove",  # Super Gant de Duel
+    "10CoinTakeMass",  # Piege 10 Pieces
+    "HalfCoinTakeMass",  # Piege mi pieces
+    "StarTakeMass",  # Piege 1 Etoile
+    "TereBell",  # Cloche Boo
+    "WanwanWhistle",  # Sifflet Chomp
+    "HiddenBlockCard",  # Carte Bloc Caché
+]
 
 # Noms et lots d'items spécifiques par map
 map_items = {
-    "Map01": {
-        "name": "Goomba Lagoon", 
-        "items": [
-            "Shell" #Conque des Marais
-            ]
-        },
-    "Map02": {
-        "name": "Western Land", 
-        "items": [
-            "Key" #Clé Squelette
-            ]},
-    "Map03": {
-        "name": "Mario's Rainbow Castle",
-        "items": [
-                "Roulette" #Tour
-                ]
-            },
-    "Map04": {
-        "name": "Roll 'em Raceway",
-        "items": [
-            "MachDice" #Dé 4
-            ]
-        },
+    "Map01": {"name": "Goomba Lagoon", "items": ["Shell"]},  # Conque des Marais
+    "Map02": {"name": "Western Land", "items": ["Key"]},  # Clé Squelette
+    "Map03": {"name": "Mario's Rainbow Castle", "items": ["Roulette"]},  # Tour
+    "Map04": {"name": "Roll 'em Raceway", "items": ["MachDice"]},  # Dé 4
     "Map05": {
-        "name": "Rainbow Galleria", 
-        "items": [
-            "PriceHikeSticker" #Coupon Inflation
-            ]
-        },
+        "name": "Rainbow Galleria",
+        "items": ["PriceHikeSticker"],  # Coupon Inflation
+    },
     "Map06": {
         "name": "King Bowser's Keep",
         "items": [
-            "ConveyorSwitch", #Switch
-            "Key",  #Clé Squelette
+            "ConveyorSwitch",  # Switch
+            "Key",  # Clé Squelette
         ],
     },
     "Map07": {
-        "name": "Mega Wiggler's Tree Party", 
-        "items": [
-            "AlarmClock"  #Cloche Wiggler
-            ]
-        },
+        "name": "Mega Wiggler's Tree Party",
+        "items": ["AlarmClock"],  # Cloche Wiggler
+    },
 }
 
 
 class MapTab(tk.Frame):
-    def __init__(self, parent, map_name, item_shop_data, item_bag_data, item_mass_data, WORKSPACE_PATH):
+    def __init__(
+        self,
+        parent,
+        map_name,
+        item_shop_data,
+        item_bag_data,
+        item_mass_data,
+        event_data_manager,
+        luckymass_data,
+        unluckymass_data,
+        masskoopa_data,
+        hidden_block_data,
+        map_layout_data,
+        WORKSPACE_PATH,
+    ):
         super().__init__(parent)
         self.WORKSPACE_PATH = WORKSPACE_PATH
         self.item_shop_data = item_shop_data
         self.item_bag_data = item_bag_data
         self.item_mass_data = item_mass_data
+        self.event_data_manager = event_data_manager
+        self.luckymass_data = luckymass_data
+        self.unluckymass_data = unluckymass_data
+        self.masskoopa_data = masskoopa_data
+        self.hidden_block_data = hidden_block_data
+        self.map_layout_data = map_layout_data
+
         self.map_name = map_name.replace(" ", "_")
 
         # Nouveau Notebook principal pour organiser les onglets
@@ -150,7 +165,7 @@ class MapTab(tk.Frame):
             self.map_name,
             APP_WIDTH,
             general_items,
-            map_items
+            map_items,
         )
 
         item_mass_tab = ttk.Frame(self.items_packs_notebook)
@@ -161,9 +176,9 @@ class MapTab(tk.Frame):
             self.map_name,
             APP_WIDTH,
             general_items,
-            map_items
+            map_items,
         )
-        
+
         self.events_tab = ttk.Frame(self.main_notebook)
         self.main_notebook.add(self.events_tab, text="Events")
         self.events_notebook = ttk.Notebook(self.events_tab)
@@ -171,30 +186,36 @@ class MapTab(tk.Frame):
 
         lucky_tab = ttk.Frame(self.events_notebook)
         self.events_notebook.add(lucky_tab, text="Lucky")
-        self.lucky_events = EventEditor(lucky_tab, "Lucky", self.map_name)
+        self.lucky_events = EventEditor(
+            lucky_tab, "LuckyMass", self.map_name, APP_WIDTH, self.event_data_manager
+        )
 
         unlucky_tab = ttk.Frame(self.events_notebook)
         self.events_notebook.add(unlucky_tab, text="Unlucky")
-        self.unlucky_events = EventEditor(unlucky_tab, "Unlucky", self.map_name)
+        self.unlucky_events = EventEditor(
+            unlucky_tab, "UnluckyMass", self.map_name, APP_WIDTH, self.event_data_manager
+        )
 
         koopa_mass_tab = ttk.Frame(self.events_notebook)
         self.events_notebook.add(koopa_mass_tab, text="KoopaMass")
-        self.koopa_mass_events = EventEditor(koopa_mass_tab, "KoopaMass", self.map_name)
+        self.koopa_mass_events = EventEditor(
+            koopa_mass_tab, "KoopaMass", self.map_name, APP_WIDTH, self.event_data_manager
+        )
 
         self.hidden_block_tab = ttk.Frame(self.main_notebook)
         self.main_notebook.add(self.hidden_block_tab, text="Hidden Block")
         self.hidden_block = HiddenBlockEditor(self.hidden_block_tab, self.map_name)
-        
+
         self.map_layout_tab = ttk.Frame(self.main_notebook)
         self.main_notebook.add(self.map_layout_tab, text="Map Layout")
         self.map_layout = MapLayoutEditor(self.map_layout_tab, self.map_name)
-        
+
         # Onglet en Développement
-        self.main_notebook.tab(2, state="disabled")
         self.main_notebook.tab(3, state="disabled")
         self.main_notebook.tab(4, state="disabled")
 
     def load_data(self):
+        # Item Shop
         self.item_shop_data = load_itemshop_mapdata(self.WORKSPACE_PATH, self.map_name)
         self.koopa_shop.load_shop_data("P0", self.item_shop_data)
         self.koopa_shop.load_shop_data("P1", self.item_shop_data)
@@ -202,16 +223,31 @@ class MapTab(tk.Frame):
         self.kamek_shop.load_shop_data("P0", self.item_shop_data)
         self.kamek_shop.load_shop_data("P1", self.item_shop_data)
         self.kamek_shop.load_shop_data("P2", self.item_shop_data)
-        # Charger les données pour ItemBag et ItemMass
-        self.item_bag_data = load_itembag_mapdata(
-            self.WORKSPACE_PATH, self.map_name
-        )
-        self.item_mass_data = load_itemmass_mapdata(
-            self.WORKSPACE_PATH, self.map_name
-        )
-        # Charger les items pour les sections ItemBag et ItemMass
+        
+        # Item Bag
+        self.item_bag_data = load_itembag_mapdata(self.WORKSPACE_PATH, self.map_name)
         self.item_bag.load_items(self.item_bag_data)
+        
+        # Item Mass
+        self.item_mass_data = load_itemmass_mapdata(self.WORKSPACE_PATH, self.map_name)
         self.item_mass.load_items(self.item_mass_data)
+        
+        # Events
+        # Lucky
+        self.luckymass_data = load_event_mapdata(
+            self.WORKSPACE_PATH, self.map_name, "LuckyMass"
+        )
+        self.lucky_events.load_event_data(self.luckymass_data)
+        # Unlucky
+        self.unluckymass_data = load_event_mapdata(
+            self.WORKSPACE_PATH, self.map_name, "UnluckyMass"
+        )
+        self.unlucky_events.load_event_data(self.unluckymass_data)
+        # KoopaMass
+        self.koopamass_data = load_event_mapdata(
+            self.WORKSPACE_PATH, self.map_name, "KoopaMass"
+        )
+        self.koopa_mass_events.load_event_data(self.koopamass_data)
 
     def save_data(self):
         self.item_shop_data = self.koopa_shop.save_shop_data("P0")
@@ -222,27 +258,37 @@ class MapTab(tk.Frame):
         self.item_shop_data = self.kamek_shop.save_shop_data("P2")
         self.item_bag_data = self.item_bag.save_items()
         self.item_mass_data = self.item_mass.save_items()
-        save_itembag_mapdata(
-            self.WORKSPACE_PATH, self.item_bag_data, self.map_name
-        )
-        save_itemmass_mapdata(
-            self.WORKSPACE_PATH, self.item_mass_data, self.map_name
-        )
+        self.luckymass_data = self.event_data_manager.get_event_data(self.map_name,"LuckyMass")
+        self.unluckymass_data = self.event_data_manager.get_event_data(self.map_name,"UnluckyMass")
+        self.koopamass_data = self.event_data_manager.get_event_data(self.map_name,"KoopaMass")
+        save_event_mapdata(self.WORKSPACE_PATH, self.luckymass_data, self.map_name,"LuckyMass")
+        save_event_mapdata(self.WORKSPACE_PATH, self.unluckymass_data, self.map_name,"UnluckyMass")
+        save_event_mapdata(self.WORKSPACE_PATH, self.koopamass_data, self.map_name,"KoopaMass")
+        save_itembag_mapdata(self.WORKSPACE_PATH, self.item_bag_data, self.map_name)
+        save_itemmass_mapdata(self.WORKSPACE_PATH, self.item_mass_data, self.map_name)
         save_itemshop_mapdata(self.WORKSPACE_PATH, self.map_name, self.item_shop_data)
 
 
 class JamboreeMapEditor(tk.Tk):
-    def __init__(self,WORKSPACE_PATH):
+    def __init__(self, WORKSPACE_PATH):
         super().__init__()
         self.WORKSPACE_PATH = WORKSPACE_PATH
         self.geometry(f"{APP_WIDTH}x{APP_HEIGHT}")
         self.resizable(False, False)
-        self.title(f"Super Mario Party Jamboree : Map Editor | {os.path.basename(WORKSPACE_PATH)}")
+        self.title(
+            f"Super Mario Party Jamboree : Map Editor | {os.path.basename(WORKSPACE_PATH)}"
+        )
 
         # Séparation des variables globales en trois variables
         self.item_shop_data = {}
         self.item_bag_data = {}
         self.item_mass_data = {}
+        self.luckymass_data = {}
+        self.unluckymass_data = {}
+        self.koopamass_data = {}
+        self.hiddenblock_data = {}
+        self.map_layout_data = {}
+        self.event_data_manager = EventDataManager()
 
         style = ttk.Style(self)
         style.configure("TNotebook", tabposition="n")
@@ -261,6 +307,12 @@ class JamboreeMapEditor(tk.Tk):
                 self.item_shop_data,
                 self.item_bag_data,
                 self.item_mass_data,
+                self.event_data_manager,
+                self.luckymass_data,
+                self.unluckymass_data,
+                self.koopamass_data,
+                self.hiddenblock_data,
+                self.map_layout_data,
                 self.WORKSPACE_PATH
             )
             self.notebook.add(tab, text=map_items[map_name]["name"])
@@ -281,26 +333,62 @@ class JamboreeMapEditor(tk.Tk):
             text="Save Map Data",
             command=self.save_data,
             width=APP_WIDTH,
-            state="disabled"
+            state="disabled",
         )
         self.save_button.pack(pady=5)
         self.after(100, self.load_data)
 
     def load_data(self):
-        if not os.path.exists(os.path.join(self.WORKSPACE_PATH,"bd~bd00.nx", "bd", "bd00", "data")):
+        if not os.path.exists(
+            os.path.join(self.WORKSPACE_PATH, "bd~bd00.nx", "bd", "bd00", "data")
+        ):
             # Afficher un message d'alerte si le dossier n'existe pas
-            messagebox.showerror("Error", f"The workspace data cannot be read correctly")
+            messagebox.showerror(
+                "Error", f"The workspace data cannot be read correctly"
+            )
         else:
             errors = []
             for i in range(1, 8):
                 for file in [
-                    os.path.join("bd~bd00.nx", "bd", "bd00", "data",f"bd00_ItemBag_Map{str(i).zfill(2)}.json"),
-                    os.path.join("bd~bd00.nx", "bd", "bd00", "data",f"bd00_ItemMass_Map{str(i).zfill(2)}.json"),
-                    os.path.join("bd~bd00.nx", "bd", "bd00", "data",f"bd00_ItemShop_Map{str(i).zfill(2)}.json")
-                    ]:
+                    os.path.join(
+                        "bd~bd00.nx",
+                        "bd",
+                        "bd00",
+                        "data",
+                        f"bd00_ItemBag_Map{str(i).zfill(2)}.json",
+                    ),
+                    os.path.join(
+                        "bd~bd00.nx",
+                        "bd",
+                        "bd00",
+                        "data",
+                        f"bd00_ItemMass_Map{str(i).zfill(2)}.json",
+                    ),
+                    os.path.join(
+                        "bd~bd00.nx",
+                        "bd",
+                        "bd00",
+                        "data",
+                        f"bd00_ItemShop_Map{str(i).zfill(2)}.json",
+                    ),
+                    os.path.join(
+                        "bd~bd00.nx",
+                        "bd",
+                        "bd00",
+                        "data",
+                        f"bd00_LuckyMass_Map{str(i).zfill(2)}.json",
+                    ),
+                    os.path.join(
+                        "bd~bd00.nx",
+                        "bd",
+                        "bd00",
+                        "data",
+                        f"bd00_UnluckyMass_Map{str(i).zfill(2)}.json",
+                    ),
+                ]:
                     file_path = os.path.join(self.WORKSPACE_PATH, file)
                     try:
-                        with open(file_path, 'r', encoding='utf-8-sig') as json_file:
+                        with open(file_path, "r", encoding="utf-8-sig") as json_file:
                             json.load(json_file)
                     except Exception as error:
                         # Ajouter le message d'erreur à la liste
@@ -309,20 +397,31 @@ class JamboreeMapEditor(tk.Tk):
                 # Vérifier s'il y a des erreurs et les afficher dans une boîte de message
             if errors:
                 error_message = "\n".join(errors)
-                messagebox.showerror("Error", f"The following errors occurred:\n{error_message}")
+                messagebox.showerror(
+                    "Error", f"The following errors occurred:\n{error_message}"
+                )
                 return
-                   
+
             for tab in self.notebook.tabs():
                 tab_widget = self.notebook.nametowidget(tab)
                 tab_widget.load_data()
-            self.save_button.config(state='normal')
+            self.save_button.config(state="normal")
 
     def save_data(self):
         if not os.path.exists(self.WORKSPACE_PATH):
             # Afficher un message d'alerte si le dossier n'existe pas
-            messagebox.showerror("Error", f"The workspace data cannot be read correctly")
+            messagebox.showerror(
+                "Error", f"The workspace data cannot be read correctly"
+            )
         else:
+            if self.event_data_manager.get_events_status() == False:
+                messagebox.showinfo(
+                    "Events Errors", "The Event tab compliance check failed, please check if every rate settings are valid"
+                )
+                return
             for tab in self.notebook.tabs():
                 tab_widget = self.notebook.nametowidget(tab)
                 tab_widget.save_data()
-            messagebox.showinfo("Data Saved", "The bd~bd00.nx folder has been modified successfuly")
+            messagebox.showinfo(
+                "Data Saved", "The workspace files has been modified successfuly"
+            )

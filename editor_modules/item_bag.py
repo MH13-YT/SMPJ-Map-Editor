@@ -109,20 +109,6 @@ class ItemBagEditor:
                 })
         self.data_store[self.map_name] = items
         return items
-    
-def load_itembag_data(map_number, base_path):
-    file_name = os.path.join("bd~bd00.nx", "bd", "bd00", "data",f"bd00_ItemBag_{map_number}.json")
-    file_path = os.path.join(base_path, file_name)
-    try:
-        with open(file_path, 'r', encoding='utf-8-sig') as f:
-            data = json.load(f)
-            return data.get(map_number)
-    except FileNotFoundError:
-        print(f"File not found : {file_name}")
-        return []
-    except json.JSONDecodeError:
-        print(f"Error occurred while reading file : {file_name}")
-        return []
 
 def process_itembag_data(item_data, data_key):
     """
@@ -141,9 +127,19 @@ def load_itembag_mapdata(base_path,map_name):
     Charge les fichiers JSON pour ItemBag et ItemMass pour la carte associé.
     """
     item_bag_data = {}
+    item_bag_raw_data = []
+    file_name = os.path.join("bd~bd00.nx", "bd", "bd00", "data",f"bd00_ItemBag_{map_name}.json")
+    file_path = os.path.join(base_path, file_name)
+    try:
+        with open(file_path, 'r', encoding='utf-8-sig') as f:
+            data = json.load(f)
+            item_bag_raw_data = data.get(map_name)
+    except FileNotFoundError:
+        print(f"File not found : {file_name}")
+    except json.JSONDecodeError:
+        print(f"Error occurred while reading file : {file_name}")
         
     # Charger les données pour ItemBag
-    item_bag_raw_data = load_itembag_data(map_name, base_path)
     item_bag_data[map_name] = process_itembag_data(item_bag_raw_data, "ItemBag")
     return item_bag_data
 

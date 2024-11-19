@@ -144,27 +144,10 @@ class ItemMassEditor:
         # Sauvegarder les données pour la carte spécifique (self.map_name)
         self.data_store[self.map_name] = items
         return items
-    
-def load_itemmass_data(map_number, base_path):
-    """
-    Charge les données JSON pour ItemBag ou ItemMass.
-    """
-    file_name = os.path.join("bd~bd00.nx", "bd", "bd00", "data",f"bd00_ItemMass_{map_number}.json")
-    file_path = os.path.join(base_path, file_name)
-    try:
-        with open(file_path, 'r', encoding='utf-8-sig') as f:
-            data = json.load(f)
-            return data.get(map_number)
-    except FileNotFoundError:
-        print(f"File not found : {file_name}")
-        return []
-    except json.JSONDecodeError:
-        print(f"Error occurred while reading file : {file_name}")
-        return []
 
-def process_itemmass_data(item_data, data_key):
+def process_itemmass_data(item_data):
     """
-    Traite les données de ItemBag ou ItemMass.
+    Traite les données de ItemMass ou ItemMass.
     """
     results = []
     for entry in item_data:
@@ -175,10 +158,24 @@ def process_itemmass_data(item_data, data_key):
     return results
 
 def load_itemmass_mapdata(base_path,map_name):
+    """
+    Charge les fichiers JSON pour ItemMass et ItemMass pour la carte associé.
+    """
     item_mass_data = {}
-    item_mass_raw_data = load_itemmass_data(map_name, base_path)
-    item_mass_data[map_name] = process_itemmass_data(item_mass_raw_data, "ItemMass")
-
+    item_mass_raw_data = []
+    file_name = os.path.join("bd~bd00.nx", "bd", "bd00", "data",f"bd00_ItemMass_{map_name}.json")
+    file_path = os.path.join(base_path, file_name)
+    try:
+        with open(file_path, 'r', encoding='utf-8-sig') as f:
+            data = json.load(f)
+            item_mass_raw_data = data.get(map_name)
+    except FileNotFoundError:
+        print(f"File not found : {file_name}")
+    except json.JSONDecodeError:
+        print(f"Error occurred while reading file : {file_name}")
+        
+    # Charger les données pour ItemMass
+    item_mass_data[map_name] = process_itemmass_data(item_mass_raw_data)
     return item_mass_data
 
 def save_itemmass_mapdata(base_path,item_mass_data,map_name):
