@@ -28,12 +28,9 @@ class ItemMassEditor:
         for row in range(rows):
             self.frame.grid_rowconfigure(row, weight=1, uniform="group")  # Pour une hauteur égale
 
-        # Liste des lots, excluant les numéros 4 et 6
-        available_lots = [0, 1, 2, 3, 5, 7, 8]
-
         # Créer une grille de 4 colonnes et 2 lignes (réorganiser les lots disponibles)
         num_columns = 7  # Nombre de colonnes
-        for index, lot_no in enumerate(available_lots):
+        for index, lot_no in enumerate([0, 1, 2, 3, 5, 7, 8]):
             self.create_lot_column(lot_no, app_width, index, num_columns)
 
     def create_lot_column(self, lot_no, app_width, index, num_columns):

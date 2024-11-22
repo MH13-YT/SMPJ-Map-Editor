@@ -2,7 +2,7 @@ import json
 import os
 import tkinter as tk
 from tkinter import ttk, messagebox
-from editor_modules.hidden_block import HiddenBlockEditor
+from editor_modules.hidden_block import (HiddenBlockDataManager, HiddenBlockEditor, load_hiddenblock_mapdata, save_hiddenblock_mapdata)
 from editor_modules.item_bag import (
     ItemBagEditor,
     load_itembag_mapdata,
@@ -96,6 +96,7 @@ class MapTab(tk.Frame):
         item_bag_data,
         item_mass_data,
         event_data_manager,
+        hiddenblock_data_manager,
         luckymass_data,
         unluckymass_data,
         masskoopa_data,
@@ -109,6 +110,7 @@ class MapTab(tk.Frame):
         self.item_bag_data = item_bag_data
         self.item_mass_data = item_mass_data
         self.event_data_manager = event_data_manager
+        self.hiddenblock_data_manager = hiddenblock_data_manager
         self.luckymass_data = luckymass_data
         self.unluckymass_data = unluckymass_data
         self.masskoopa_data = masskoopa_data
@@ -204,14 +206,13 @@ class MapTab(tk.Frame):
 
         self.hidden_block_tab = ttk.Frame(self.main_notebook)
         self.main_notebook.add(self.hidden_block_tab, text="Hidden Block")
-        self.hidden_block = HiddenBlockEditor(self.hidden_block_tab, self.map_name)
+        self.hidden_block = HiddenBlockEditor(self.hidden_block_tab, self.map_name, APP_WIDTH, self.hiddenblock_data_manager)
 
         self.map_layout_tab = ttk.Frame(self.main_notebook)
         self.main_notebook.add(self.map_layout_tab, text="Map Layout")
         self.map_layout = MapLayoutEditor(self.map_layout_tab, self.map_name)
 
         # Onglet en Développement
-        self.main_notebook.tab(3, state="disabled")
         self.main_notebook.tab(4, state="disabled")
 
     def load_data(self):
@@ -248,6 +249,12 @@ class MapTab(tk.Frame):
             self.WORKSPACE_PATH, self.map_name, "KoopaMass"
         )
         self.koopa_mass_events.load_event_data(self.koopamass_data)
+        
+        # HiddenBlock
+        self.hidden_block_data = load_hiddenblock_mapdata(
+            self.WORKSPACE_PATH, self.map_name
+        )
+        self.hidden_block.load_hiddenblock_data(self.hidden_block_data)
 
     def save_data(self):
         self.item_shop_data = self.koopa_shop.save_shop_data("P0")
@@ -261,9 +268,11 @@ class MapTab(tk.Frame):
         self.luckymass_data = self.event_data_manager.get_event_data(self.map_name,"LuckyMass")
         self.unluckymass_data = self.event_data_manager.get_event_data(self.map_name,"UnluckyMass")
         self.koopamass_data = self.event_data_manager.get_event_data(self.map_name,"KoopaMass")
+        self.hidden_block_data = self.hiddenblock_data_manager.get_event_data(self.map_name)
         save_event_mapdata(self.WORKSPACE_PATH, self.luckymass_data, self.map_name,"LuckyMass")
         save_event_mapdata(self.WORKSPACE_PATH, self.unluckymass_data, self.map_name,"UnluckyMass")
         save_event_mapdata(self.WORKSPACE_PATH, self.koopamass_data, self.map_name,"KoopaMass")
+        save_hiddenblock_mapdata(self.WORKSPACE_PATH,self.hidden_block_data,self.map_name)
         save_itembag_mapdata(self.WORKSPACE_PATH, self.item_bag_data, self.map_name)
         save_itemmass_mapdata(self.WORKSPACE_PATH, self.item_mass_data, self.map_name)
         save_itemshop_mapdata(self.WORKSPACE_PATH, self.map_name, self.item_shop_data)
@@ -289,6 +298,7 @@ class JamboreeMapEditor(tk.Tk):
         self.hiddenblock_data = {}
         self.map_layout_data = {}
         self.event_data_manager = EventDataManager()
+        self.hiddenblock_data_manager = HiddenBlockDataManager()
 
         style = ttk.Style(self)
         style.configure("TNotebook", tabposition="n")
@@ -308,6 +318,7 @@ class JamboreeMapEditor(tk.Tk):
                 self.item_bag_data,
                 self.item_mass_data,
                 self.event_data_manager,
+                self.hiddenblock_data_manager,
                 self.luckymass_data,
                 self.unluckymass_data,
                 self.koopamass_data,
@@ -384,6 +395,13 @@ class JamboreeMapEditor(tk.Tk):
                         "bd00",
                         "data",
                         f"bd00_UnluckyMass_Map{str(i).zfill(2)}.json",
+                    ),
+                    os.path.join(
+                        "bd~bd00.nx",
+                        "bd",
+                        "bd00",
+                        "data",
+                        f"bd00_HiddenBlock.json",
                     ),
                 ]:
                     file_path = os.path.join(self.WORKSPACE_PATH, file)
