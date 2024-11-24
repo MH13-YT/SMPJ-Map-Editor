@@ -1,8 +1,7 @@
-# SMPJ Map Item Editor
+# SMPJ Map Editor
 
-SMPJ Map Item Editor is a data editor for the game Super Mario Party Jamboree
-
-This data editor focuses on map items
+SMPJ Map Editor is a data editor for the game Super Mario Party Jamboree
+(THIS TOOL ISN'T A MAP MAKER or a variant of Party Studio)
 
 ## Features
 ### WARNING
@@ -13,10 +12,10 @@ therefore it is intended for users with a minimum of knowledge of switch modding
 - Edit items obtainable in the shops (Only Koopa and Kamek, it cannot edit Rainbow Galleria specific shop)
 - Edit items obtainable by the item bag
 - Edit items obtainable by the item case (can also remove object minigames option)
-
-### Planned Features
 - Edit events (Lucky, Unlucky and Bowser)
 - Edit hidden blocks
+
+### Planned Features
 - Edit map (Change types (Blue/Red/Lucky/Unlucky/Bowser/Chance Time...)
 
 ## How to Install
