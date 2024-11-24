@@ -1,6 +1,7 @@
 # SMPJ Map Editor
 
 SMPJ Map Editor is a data editor for the game Super Mario Party Jamboree
+
 (THIS TOOL ISN'T A MAP MAKER or a variant of Party Studio)
 
 ## Features
