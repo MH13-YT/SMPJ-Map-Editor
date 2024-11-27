@@ -12,31 +12,39 @@ from tkinter import ttk, messagebox, simpledialog
 
 from editor import JamboreeMapEditor
 
+# Automatic Dependency Manager Status (True = Enabled, False = Disabled)
+# The automatic dependency manager allows you to automatically install all application dependencies from requirements.txt
+# This one works by checking the dependencies at each launch from requirements.txt
+enable_automatic_dependency_manager = True
+# Optional: Dependency search functionality by source code analysis (requires pipreqs) (True = Enabled, False = Disabled)
+# This feature allows you to automatically refresh the requirements.txt file using pipreqs
+enable_automatic_dependancy_analysis = False
 
 def manage_dependencies():
     import importlib.util
     import importlib.metadata
-
+    
     if getattr(sys, "frozen", False):
         return True
     project_path = os.getcwd()
     requirements_file = os.path.join(project_path, "requirements.txt")
 
     try:
-        if importlib.util.find_spec("pipreqs") is None:
-            print("pipreqs is not installed. Starting installation...")
-            subprocess.check_call(
-                [sys.executable, "-m", "pip", "install", "pipreqs"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
+        if enable_automatic_dependancy_analysis:
+            if importlib.util.find_spec("pipreqs") is None:
+                print("pipreqs is not installed. Starting installation...")
+                subprocess.check_call(
+                    [sys.executable, "-m", "pip", "install", "pipreqs"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
 
-        print("Generating requirements.txt with pipreqs...")
-        subprocess.check_call(
-            [sys.executable, "-m", "pipreqs.pipreqs", project_path, "--force"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+                print("Generating requirements.txt with pipreqs...")
+                subprocess.check_call(
+                    [sys.executable, "-m", "pipreqs.pipreqs", project_path, "--force"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
 
         if os.path.exists(requirements_file):
             with open(requirements_file, "r") as file:
@@ -78,7 +86,7 @@ def manage_dependencies():
             print("All missing dependencies are installed.")
             return True
         else:
-            print("Error: requirements.txt not found (pipreqs generation error).")
+            print("Error: requirements.txt isn't found")
             input("Press any key to exit...")
             return False
 
@@ -275,10 +283,15 @@ def main_interface():
         else None
     )
 
-
 if __name__ == "__main__":
     try:
-        if manage_dependencies():
+        if enable_automatic_dependency_manager:
+            print("Automatic dependency manager is enabled, starting check")
+            requirements_check = manage_dependencies()
+        else:
+            print("Automatic dependency manager is disabled, starting app")
+            requirements_check = True
+        if requirements_check:
             ensure_directories()
             workspace_path = main_interface()
             if workspace_path:
