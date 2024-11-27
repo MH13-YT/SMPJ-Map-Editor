@@ -1,6 +1,8 @@
 import json
 import os
+import subprocess
 import sys
+import time
 import hashlib
 import shutil
 import re
@@ -9,6 +11,81 @@ import traceback
 from tkinter import ttk, messagebox, simpledialog
 
 from editor import JamboreeMapEditor
+
+
+def manage_dependencies():
+    import importlib.util
+    import importlib.metadata
+
+    if getattr(sys, "frozen", False):
+        return True
+    project_path = os.getcwd()
+    requirements_file = os.path.join(project_path, "requirements.txt")
+
+    try:
+        if importlib.util.find_spec("pipreqs") is None:
+            print("pipreqs is not installed. Starting installation...")
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "pipreqs"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+        print("Generating requirements.txt with pipreqs...")
+        subprocess.check_call(
+            [sys.executable, "-m", "pipreqs.pipreqs", project_path, "--force"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        if os.path.exists(requirements_file):
+            with open(requirements_file, "r") as file:
+                requirements_content = file.read().strip().splitlines()
+
+            print("\nContent of requirements.txt:")
+            print("\n".join(requirements_content))
+
+            installed_packages = {
+                pkg.metadata["Name"].lower()
+                for pkg in importlib.metadata.distributions()
+            }
+
+            packages_to_install = [
+                pkg
+                for pkg in requirements_content
+                if pkg.split("==")[0].lower() not in installed_packages
+            ]
+
+            if not packages_to_install:
+                print(
+                    "\nAll dependencies are already installed. Skipping installation."
+                )
+                return True
+
+            print(
+                f"\nThe following dependencies are missing and will be installed: {', '.join(packages_to_install)}"
+            )
+            print("\nThe installation of dependencies will start in 5 seconds.")
+
+            for i in range(5, 0, -1):
+                print(f"{i}...", end="", flush=True)
+                time.sleep(1)
+
+            print("\nInstalling missing dependencies...")
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install"] + packages_to_install
+            )
+            print("All missing dependencies are installed.")
+            return True
+        else:
+            print("Error: requirements.txt not found (pipreqs generation error).")
+            input("Press any key to exit...")
+            return False
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error in process: {e}")
+        input("Press any key to exit...")
+        return False
 
 
 if getattr(sys, "frozen", False):
@@ -198,13 +275,17 @@ def main_interface():
         else None
     )
 
+
 if __name__ == "__main__":
     try:
-        ensure_directories()
-        workspace_path = main_interface()
-        if workspace_path:
-            app = JamboreeMapEditor(workspace_path)
-            app.mainloop()
+        if manage_dependencies():
+            ensure_directories()
+            workspace_path = main_interface()
+            if workspace_path:
+                app = JamboreeMapEditor(workspace_path)
+                app.mainloop()
+        else:
+            print("Unable to install dependencies")
     except Exception as e:
         print(f"Fatal error: {e}")
         traceback.print_exc()
