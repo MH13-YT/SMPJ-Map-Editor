@@ -1,6 +1,7 @@
 # SMPJ Map Editor
 
 SMPJ Map Editor is a data editor for the game Super Mario Party Jamboree
+
 (THIS TOOL ISN'T A MAP MAKER or a variant of Party Studio)
 
 ## Features
@@ -21,5 +22,5 @@ therefore it is intended for users with a minimum of knowledge of switch modding
 ## How to Install
 ### Prerequisites
 - A complete dump of the Super Mario Party Jamboree romfs file, google is your friend for obtain it
-- Switch Toolbox (for extract files from "bd\~bd00.nx.bea to bd\~bd07.nx.bea" Archive and place the files on a folder named "bd\~bd00.nx" to "bd\~bd07.nx" in the same folder than "main.py")
+- Switch Toolbox (for extract files from "bd\~bd00.nx.bea to bd\~bd07.nx.bea" Archive and place the files on a folder named "bd\~bd00.nx" to "bd\~bd07.nx" in the CORE folder on the same place than "main.py")
 - Python, with Tinkerer/Tk installed
