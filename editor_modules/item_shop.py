@@ -1,6 +1,6 @@
 import json
 import os
-from tkinter import Tk, ttk
+from tkinter import ttk
 import tkinter as tk
 
 
@@ -94,12 +94,12 @@ def save_itemshop_mapdata(BASE_PATH, map_name, data):
                 type_value = 1
             for p in range(0, 3):
                 if (
-                    data[f"{shop_name}Shop"][f"P{p}"][f"slot1"]["item"] == "Empty"
-                    and data[f"{shop_name}Shop"][f"P{p}"][f"slot2"]["item"] == "Empty"
-                    and data[f"{shop_name}Shop"][f"P{p}"][f"slot3"]["item"] == "Empty"
-                    and data[f"{shop_name}Shop"][f"P{p}"][f"slot4"]["item"] == "Empty"
-                    and data[f"{shop_name}Shop"][f"P{p}"][f"slot5"]["item"] == "Empty"
-                    and data[f"{shop_name}Shop"][f"P{p}"][f"slot6"]["item"] == "Empty"
+                    data[f"{shop_name}Shop"][f"P{p}"]["slot1"]["item"] == "Empty"
+                    and data[f"{shop_name}Shop"][f"P{p}"]["slot2"]["item"] == "Empty"
+                    and data[f"{shop_name}Shop"][f"P{p}"]["slot3"]["item"] == "Empty"
+                    and data[f"{shop_name}Shop"][f"P{p}"]["slot4"]["item"] == "Empty"
+                    and data[f"{shop_name}Shop"][f"P{p}"]["slot5"]["item"] == "Empty"
+                    and data[f"{shop_name}Shop"][f"P{p}"]["slot6"]["item"] == "Empty"
                 ):
                     print(
                         f"No Item in {map_name} {shop_name}Shop in Phase {p}, Replacing 1st empty slot with 'Stone'"

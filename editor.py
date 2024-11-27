@@ -29,10 +29,10 @@ from editor_modules.events import (
     load_event_mapdata,
     save_event_mapdata,
 )
-from editor_modules.map_layout import MapLayoutEditor
+from editor_modules.map_layout import MapLayoutEditor, load_map_layout_mapdata, save_map_layout_mapdata
 
 APP_WIDTH = 1100
-APP_HEIGHT = 850
+APP_HEIGHT = 1000
 
 general_items = [
     "Stone",
@@ -88,6 +88,17 @@ map_items = {
     },
 }
 
+map_layout_settings = {
+    "Map01": {"reverse_x":False,"reverse_y":True},
+    "Map02": {"reverse_x":False,"reverse_y":True},
+    "Map03": {"reverse_x":False,"reverse_y":True},
+    "Map04": {"reverse_x":False,"reverse_y":True},
+    "Map05": {"reverse_x":False,"reverse_y":True},
+    "Map06": {"reverse_x":False,"reverse_y":True},
+    "Map07": {"reverse_x":False,"reverse_y":True},
+    
+}
+
 
 class MapTab(tk.Frame):
     def __init__(
@@ -103,7 +114,6 @@ class MapTab(tk.Frame):
         unluckymass_data,
         masskoopa_data,
         hidden_block_data,
-        map_layout_data,
         WORKSPACE_PATH,
     ):
         super().__init__(parent)
@@ -117,7 +127,6 @@ class MapTab(tk.Frame):
         self.unluckymass_data = unluckymass_data
         self.masskoopa_data = masskoopa_data
         self.hidden_block_data = hidden_block_data
-        self.map_layout_data = map_layout_data
 
         self.map_name = map_name.replace(" ", "_")
 
@@ -220,9 +229,7 @@ class MapTab(tk.Frame):
 
         self.map_layout_tab = ttk.Frame(self.main_notebook)
         self.main_notebook.add(self.map_layout_tab, text="Map Layout")
-        self.map_layout = MapLayoutEditor(self.map_layout_tab, self.map_name)
-
-        self.main_notebook.tab(4, state="disabled")
+        self.map_layout = MapLayoutEditor(self.map_layout_tab, self.map_name,self.WORKSPACE_PATH,map_layout_settings[map_name]["reverse_x"],map_layout_settings[map_name]["reverse_y"])
 
     def load_data(self):
         self.item_shop_data = load_itemshop_mapdata(self.WORKSPACE_PATH, self.map_name)
@@ -258,6 +265,9 @@ class MapTab(tk.Frame):
             self.WORKSPACE_PATH, self.map_name
         )
         self.hidden_block.load_hiddenblock_data(self.hidden_block_data)
+        
+        self.map_layout_data = load_map_layout_mapdata(self.WORKSPACE_PATH, self.map_name)
+        self.map_layout.load_data(self.map_layout_data)
 
     def save_data(self):
         self.item_shop_data = self.koopa_shop.save_shop_data("P0")
@@ -266,35 +276,46 @@ class MapTab(tk.Frame):
         self.item_shop_data = self.kamek_shop.save_shop_data("P0")
         self.item_shop_data = self.kamek_shop.save_shop_data("P1")
         self.item_shop_data = self.kamek_shop.save_shop_data("P2")
+        save_itemshop_mapdata(self.WORKSPACE_PATH, self.map_name, self.item_shop_data)
+        
         self.item_bag_data = self.item_bag.save_items()
+        save_itembag_mapdata(self.WORKSPACE_PATH, self.item_bag_data, self.map_name)
+        
         self.item_mass_data = self.item_mass.save_items()
+        save_itemmass_mapdata(self.WORKSPACE_PATH, self.item_mass_data, self.map_name)
+        
         self.luckymass_data = self.event_data_manager.get_event_data(
             self.map_name, "LuckyMass"
-        )
-        self.unluckymass_data = self.event_data_manager.get_event_data(
-            self.map_name, "UnluckyMass"
-        )
-        self.koopamass_data = self.event_data_manager.get_event_data(
-            self.map_name, "KoopaMass"
-        )
-        self.hidden_block_data = self.hiddenblock_data_manager.get_hiddenblock_data(
-            self.map_name
         )
         save_event_mapdata(
             self.WORKSPACE_PATH, self.luckymass_data, self.map_name, "LuckyMass"
         )
+        
+        self.unluckymass_data = self.event_data_manager.get_event_data(
+            self.map_name, "UnluckyMass"
+        )
         save_event_mapdata(
             self.WORKSPACE_PATH, self.unluckymass_data, self.map_name, "UnluckyMass"
+        )
+        
+        self.koopamass_data = self.event_data_manager.get_event_data(
+            self.map_name, "KoopaMass"
         )
         save_event_mapdata(
             self.WORKSPACE_PATH, self.koopamass_data, self.map_name, "KoopaMass"
         )
+        
+        self.hidden_block_data = self.hiddenblock_data_manager.get_hiddenblock_data(self.map_name)
         save_hiddenblock_mapdata(
             self.WORKSPACE_PATH, self.hidden_block_data, self.map_name
         )
-        save_itembag_mapdata(self.WORKSPACE_PATH, self.item_bag_data, self.map_name)
-        save_itemmass_mapdata(self.WORKSPACE_PATH, self.item_mass_data, self.map_name)
-        save_itemshop_mapdata(self.WORKSPACE_PATH, self.map_name, self.item_shop_data)
+        
+        self.map_layout_data = self.map_layout.save_data()
+        save_map_layout_mapdata(self.WORKSPACE_PATH, self.map_name, self.map_layout_data)
+        
+        
+        
+        
 
 
 class JamboreeMapEditor(tk.Tk):
@@ -314,7 +335,6 @@ class JamboreeMapEditor(tk.Tk):
         self.unluckymass_data = {}
         self.koopamass_data = {}
         self.hiddenblock_data = {}
-        self.map_layout_data = {}
         self.event_data_manager = EventDataManager()
         self.hiddenblock_data_manager = HiddenBlockDataManager()
 
@@ -341,7 +361,6 @@ class JamboreeMapEditor(tk.Tk):
                 self.unluckymass_data,
                 self.koopamass_data,
                 self.hiddenblock_data,
-                self.map_layout_data,
                 self.WORKSPACE_PATH,
             )
             self.notebook.add(tab, text=map_items[map_name]["name"])
@@ -371,7 +390,7 @@ class JamboreeMapEditor(tk.Tk):
             os.path.join(self.WORKSPACE_PATH, "bd~bd00.nx", "bd", "bd00", "data")
         ):
             messagebox.showerror(
-                "Error", f"The workspace data cannot be read correctly"
+                "Error", "The workspace data cannot be read correctly"
             )
         else:
             errors = []

@@ -5,6 +5,7 @@ import hashlib
 import shutil
 import re
 import tkinter as tk
+import traceback
 from tkinter import ttk, messagebox, simpledialog
 
 from editor import JamboreeMapEditor
@@ -111,8 +112,6 @@ def correct_and_verify_core_integrity():
             f"Actual checksum: {calculated_checksum}"
         )
 
-    print("CORE integrity verification passed.")
-
 
 def ensure_directories():
     os.makedirs(WORKSPACE_DIR, exist_ok=True)
@@ -199,7 +198,6 @@ def main_interface():
         else None
     )
 
-
 if __name__ == "__main__":
     try:
         ensure_directories()
@@ -207,7 +205,6 @@ if __name__ == "__main__":
         if workspace_path:
             app = JamboreeMapEditor(workspace_path)
             app.mainloop()
-        else:
-            print("No workspace selected. Exiting.")
     except Exception as e:
         print(f"Fatal error: {e}")
+        traceback.print_exc()
