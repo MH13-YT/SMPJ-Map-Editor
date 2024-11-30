@@ -35,4 +35,4 @@ No Features planned actually
 ### Prerequisites
 - A complete dump of the Super Mario Party Jamboree romfs file, google is your friend for obtain it
 - Switch Toolbox (for extract files from "bd\~bd00.nx.bea to bd\~bd07.nx.bea" Archive and place the files on a folder named "bd\~bd00.nx" to "bd\~bd07.nx" in the CORE folder on the same place than `main.py`)
-- Python, with Tinkerer/Tk installed
+- Python (3.12), with Tinkerer/Tk installed
