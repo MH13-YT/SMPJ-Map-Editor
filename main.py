@@ -1,8 +1,6 @@
 import json
 import os
-import subprocess
 import sys
-import time
 import hashlib
 import shutil
 import re
@@ -11,90 +9,6 @@ import traceback
 from tkinter import ttk, messagebox, simpledialog
 
 from editor import JamboreeMapEditor
-
-# Automatic Dependency Manager Status (True = Enabled, False = Disabled)
-# The automatic dependency manager allows you to automatically install all application dependencies from requirements.txt
-# This one works by checking the dependencies at each launch from requirements.txt
-enable_automatic_dependency_manager = True
-# Optional: Dependency search functionality by source code analysis (requires pipreqs) (True = Enabled, False = Disabled)
-# This feature allows you to automatically refresh the requirements.txt file using pipreqs
-enable_automatic_dependancy_analysis = False
-
-def manage_dependencies():
-    import importlib.util
-    import importlib.metadata
-    
-    if getattr(sys, "frozen", False):
-        return True
-    project_path = os.getcwd()
-    requirements_file = os.path.join(project_path, "requirements.txt")
-
-    try:
-        if enable_automatic_dependancy_analysis:
-            if importlib.util.find_spec("pipreqs") is None:
-                print("pipreqs is not installed. Starting installation...")
-                subprocess.check_call(
-                    [sys.executable, "-m", "pip", "install", "pipreqs"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-
-                print("Generating requirements.txt with pipreqs...")
-                subprocess.check_call(
-                    [sys.executable, "-m", "pipreqs.pipreqs", project_path, "--force"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-
-        if os.path.exists(requirements_file):
-            with open(requirements_file, "r") as file:
-                requirements_content = file.read().strip().splitlines()
-
-            print("\nContent of requirements.txt:")
-            print("\n".join(requirements_content))
-
-            installed_packages = {
-                pkg.metadata["Name"].lower()
-                for pkg in importlib.metadata.distributions()
-            }
-
-            packages_to_install = [
-                pkg
-                for pkg in requirements_content
-                if pkg.split("==")[0].lower() not in installed_packages
-            ]
-
-            if not packages_to_install:
-                print(
-                    "\nAll dependencies are already installed. Skipping installation."
-                )
-                return True
-
-            print(
-                f"\nThe following dependencies are missing and will be installed: {', '.join(packages_to_install)}"
-            )
-            print("\nThe installation of dependencies will start in 5 seconds.")
-
-            for i in range(5, 0, -1):
-                print(f"{i}...", end="", flush=True)
-                time.sleep(1)
-
-            print("\nInstalling missing dependencies...")
-            subprocess.check_call(
-                [sys.executable, "-m", "pip", "install"] + packages_to_install
-            )
-            print("All missing dependencies are installed.")
-            return True
-        else:
-            print("Error: requirements.txt isn't found")
-            input("Press any key to exit...")
-            return False
-
-    except subprocess.CalledProcessError as e:
-        print(f"Error in process: {e}")
-        input("Press any key to exit...")
-        return False
-
 
 if getattr(sys, "frozen", False):
     BASE_PATH = os.path.dirname(sys.executable)
@@ -107,7 +21,7 @@ CORE_DIR = os.path.join(BASE_PATH, "CORE")
 
 
 EXPECTED_CORE_CHECKSUM = (
-    "c7486a455de3573ec3eb5b8450840940866e06395ef67bea41d3aebaab1221db"
+    "a2cdc050aa73b3c0d29e790a8a0fd1df500cf524eab365d427df56c2303c1756"
 )
 
 
@@ -285,20 +199,15 @@ def main_interface():
 
 if __name__ == "__main__":
     try:
-        if enable_automatic_dependency_manager:
-            print("Automatic dependency manager is enabled, starting check")
-            requirements_check = manage_dependencies()
-        else:
-            print("Automatic dependency manager is disabled, starting app")
-            requirements_check = True
-        if requirements_check:
-            ensure_directories()
-            workspace_path = main_interface()
-            if workspace_path:
-                app = JamboreeMapEditor(workspace_path)
-                app.mainloop()
+        ensure_directories()
+        workspace_path = main_interface()
+        if workspace_path:
+            app = JamboreeMapEditor(workspace_path)
+            app.mainloop()
         else:
             print("Unable to install dependencies")
     except Exception as e:
-        print(f"Fatal error: {e}")
         traceback.print_exc()
+        print("===================================")
+        print("An error was occured")
+        print(f"Source of error: {e}")
