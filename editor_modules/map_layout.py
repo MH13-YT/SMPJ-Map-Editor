@@ -79,12 +79,24 @@ class MapLayoutEditor:
             color_box.pack(side="top", padx=1, pady=1)
             label = ttk.Label(legend_frame, text=mass_attr)
             label.pack(side="top", padx=2, pady=2)
-
-        controls = ttk.Label(
+        controls_label = ttk.Label(legend_frame,text="Controls")
+        controls_label.pack(side="top", padx=2, pady=2)
+        controls_map = ttk.Label(
             legend_frame,
-            text="Controls\nMove Map (← ↑ → ↓)\nZoom In (🖱️\u200b↑:+)\nZoom Out (🖱️\u200b↓)\nRead Data (🖱️\u200b←)\nEdit Data (🖱️\u200b→)",
+            text="⌨️Arrow Keys : Move Map",
         )
-        controls.pack(side="top", padx=2, pady=2)
+        controls_map.pack(side="top", padx=2, pady=2)
+        controls_zoom = ttk.Label(
+            legend_frame,
+            text="🖱️Scroll ↑/↓ : Zoom In/Out",
+        )
+        controls_zoom.pack(side="top", padx=2, pady=2)
+        controls_data = ttk.Label(
+            legend_frame,
+            text="🖱️ Click ←/→ : Read/Write",
+        )
+        controls_data.pack(side="top", padx=2, pady=2)
+        
 
         self.fig, self.ax = plt.subplots(figsize=(100, 200))
         self.fig.set_size_inches(self.frame.winfo_width(), self.frame.winfo_height())

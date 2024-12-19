@@ -114,8 +114,7 @@ class ItemBagEditor:
                 item_text = self.phase_frames[phase].listbox.get(i)
                 item_data = item_text.split(" - ")
                 item_name = item_data[0]
-                unique = "Unique" in item_data[1]
-
+                unique = not "Not Unique" in item_data[1]
                 items.append({"Item": item_name, "Phase": phase, "Unique": int(unique)})
         self.data_store[self.map_name] = items
         return items

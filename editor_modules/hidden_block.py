@@ -193,8 +193,8 @@ class HiddenBlockEditor:
             block_to_remove = None
             for block in current_data:
                 lot_name = get_lot_name_by_data(block["Result"])
-                display_text = f"{lot_name} (Rate: {block['Rate']})"
-                if display_text == selected_text and block["No"] == lot_no:
+                display_text = f"    {lot_name.ljust(12 if "Star" in lot_name else 0,"\u200a")}   {f'(Rate: {str(block['Rate']).ljust(3, '\u2007')[:3]})'}    "
+                if display_text in selected_text and block["No"] == lot_no:
                     block_to_remove = block
                     break
 
