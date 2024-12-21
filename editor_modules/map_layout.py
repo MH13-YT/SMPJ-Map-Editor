@@ -317,7 +317,7 @@ class MapLayoutEditor:
         if clicked_node:
             if event.button == 1:
                 self.info_last_clicked.config(
-                    text=f"Last Clicked : Node: {clicked_node['NodeNo']} | MassAttr: {clicked_node['MassAttr']} | Read"
+                    text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Read | MassAttr: {clicked_node['MassAttr']}"
                 )
             elif event.button == 3:
                 current_mass_attr = clicked_node["MassAttr"]
@@ -327,17 +327,17 @@ class MapLayoutEditor:
                     clicked_node["MassAttr"] = new_mass_attr
                     self.draw_map()
                     self.info_last_clicked.config(
-                        text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Old MassAttr: {old_MassAttr} New MassAttr: {clicked_node['MassAttr']} | Edit"
+                        text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {old_MassAttr} | Changed to : {clicked_node['MassAttr']}"
                     )
                 else:
                     self.info_last_clicked.config(
-                        text=f"Last Clicked : Node: {clicked_node['NodeNo']} | MassAttr: {clicked_node['MassAttr']} | Abort Edit ({clicked_node['MassAttr']} isn't supported actually)"
+                        text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, ({clicked_node['MassAttr']} isn't supported actually)"
                     )
 
         elif clicked_arrow:
             nodes = clicked_arrow["nodes"]
             self.info_last_clicked.config(
-                text=f"Last Clicked : Path: Source Node {nodes['origin_node']} -> Target Node {nodes['target_node']} | Read"
+                text=f"Last Clicked : Path: {nodes['origin_node']}-{nodes['target_node']} | Mode : Read | Source Node:{nodes['origin_node']} -> Target Node:{nodes['target_node']}"
             )
 
         if self.prev_zoom and self.prev_center:
