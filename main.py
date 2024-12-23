@@ -204,8 +204,6 @@ if __name__ == "__main__":
         if workspace_path:
             app = JamboreeMapEditor(workspace_path)
             app.mainloop()
-        else:
-            print("Unable to install dependencies")
     except Exception as e:
         traceback.print_exc()
         print("===================================")

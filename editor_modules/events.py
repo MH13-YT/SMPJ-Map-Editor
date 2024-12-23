@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import tkinter as tk
 from tkinter import ttk
 
@@ -18,11 +19,9 @@ result_options = {
         "ItemBag",
         "WanwanWhistle",
         "Kinoko",
-        "Key",
         "ManyKinoko",
         "SlowKinoko",
         "ChangeBox",
-        "Roulette",
         "TripleDice",
     ],
     "UnluckyMass": [
@@ -119,7 +118,14 @@ class EventEditor:
         self.rates_totals = {"Rate0": 0.0, "Rate1": 0.0, "Rate2": 0.0, "Rate3": 0.0}
         self.map_name = map_name.replace(" ", "_")
         self.data_type = data_type
-        self.result_options = result_options.get(self.data_type, [])
+        self.result_options = result_options.get(self.data_type, [])[:]
+        
+        if self.data_type == "LuckyMass":
+            if self.map_name == "Map02" or self.map_name == "Map06":
+                self.result_options.append("Key")
+            if self.map_name == "Map03":
+                self.result_options.append("Roulette")
+            
 
         self.frame = ttk.Frame(parent)
         self.frame.pack(
@@ -198,6 +204,37 @@ class EventEditor:
     def load_event_data(self, data):
         self.event_data_manager.update_event_data(self.map_name, self.data_type, data)
         self.update_event_listbox()
+    
+    def randomize_event_data(self): # randomize les entrées a partir de la variable result_options et du self.data_type, les rates ne peuvent pas etre a 0 et ne peuvent pas dépasser 100 chaque rate ne peut pas dépasser un certain pourcentage de l'espace disponible, chaque rate est indépendante des autres
+        rate0 = 0
+        rate1 = 0
+        rate2 = 0
+        rate3 = 0
+        entries = random.sample(self.result_options, 8)
+        self.current_data = []
+        while entries:
+            entry = entries.pop(random.randrange(len(entries)))
+            new_entry = {
+                "Rate0": random.randint(0, (100 - rate0) // 3),
+                "Rate1": random.randint(0, (100 - rate1) // 3),
+                "Rate2": random.randint(0, (100 - rate2) // 3),
+                "Rate3": random.randint(0, (100 - rate3) // 3),
+                "Result": entry,
+            }
+            self.current_data.append(new_entry)
+            rate0 += new_entry["Rate0"]
+            rate1 += new_entry["Rate1"]
+            rate2 += new_entry["Rate2"]
+            rate3 += new_entry["Rate3"]
+
+        self.event_data_manager.update_event_data(
+            self.map_name, self.data_type, self.current_data
+        )
+
+        self.event_data_manager.sync_with_linked_maps(self.map_name, self.data_type)
+
+        self.recalculate_totals()
+        self.update_event_listbox()   
 
     def update_event_listbox(self):
         self.current_data = self.event_data_manager.get_event_data(
@@ -263,7 +300,8 @@ class EventEditor:
 
         except ValueError as e:
             print(f"Error: {e}")
-
+            
+        
     def remove_event_entry(self):
         try:
             selected_index = self.listbox.curselection()[0]

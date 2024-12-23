@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import tkinter as tk
 from tkinter import ttk
 
@@ -12,7 +13,7 @@ class ItemBagEditor:
         self.map_name = map_name.replace(" ", "_")
 
         map_specific_items = map_items[self.map_name]["items"]
-        combined_items = map_specific_items + general_items
+        self.combined_items = map_specific_items + general_items
 
         self.frame = ttk.Frame(parent)
         self.frame.pack(
@@ -45,7 +46,7 @@ class ItemBagEditor:
         )
         self.unique_checkbutton.grid(row=0, column=3, padx=5, pady=5)
 
-        self.entry = ttk.Combobox(self.add_form_frame, values=combined_items, width=20)
+        self.entry = ttk.Combobox(self.add_form_frame, values=self.combined_items, width=20)
         self.entry.grid(row=0, column=0, padx=5, pady=5)
         self.add_button = ttk.Button(
             self.add_button_frame, text="Add Item", command=self.add_item, width=160
@@ -106,7 +107,34 @@ class ItemBagEditor:
             unique = "Unique" if item.get("Unique") else "Not Unique"
             display_text = f"{item['Item']} - {unique}"
             self.phase_frames[phase].listbox.insert(tk.END, display_text)
+            
+    def randomize_items(self, add_probability=0.5, unique_probability=0.2):
+        for phase in range(2):
+            self.phase_frames[phase].listbox.delete(0, tk.END)
 
+            # Prendre 2 items au hasard dans la liste d'items disponible
+            if len(self.combined_items) >= 2:
+                random_items = random.sample(self.combined_items, 2)
+                unique_item = random_items[0]
+                normal_item = random_items[1]
+
+                # Ajouter l'item unique
+                unique_text = f"{unique_item} - Unique"
+                self.phase_frames[phase].listbox.insert(tk.END, unique_text)
+
+                # Ajouter l'item normal
+                normal_text = f"{normal_item} - Not Unique"
+                self.phase_frames[phase].listbox.insert(tk.END, normal_text)
+
+            # Ajouter les items aléatoires avec les probabilités spécifiées
+            for item in self.combined_items:
+                if item not in random_items:
+                    if random.random() < add_probability:
+                        unique = random.random() < unique_probability
+                        unique_text = "Unique" if unique else "Not Unique"
+                        display_text = f"{item} - {unique_text}"
+                        self.phase_frames[phase].listbox.insert(tk.END, display_text)
+                    
     def save_items(self):
         items = []
         for phase in range(2):

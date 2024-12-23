@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import tkinter as tk
 from tkinter import ttk
 
@@ -99,6 +100,18 @@ class ItemMassEditor:
                         print(f"Listbox for Lot {lot_number} is not available.")
                 else:
                     print(f"Lot number {lot_number} does not exist in self.lots.")
+                    
+    def randomize_items(self, probability=0.2):
+        for lot_no, widgets in self.lots.items():
+            listbox = widgets.get("listbox")
+            if listbox:
+                listbox.delete(0, tk.END)
+                for item in self.combined_items:
+                    if random.random() < probability:
+                        listbox.insert(tk.END, item)
+            else:
+                print(f"Listbox for Lot {lot_no} is not available")
+            
 
     def save_items(self):
         items = []

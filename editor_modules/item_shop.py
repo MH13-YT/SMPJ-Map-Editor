@@ -1,8 +1,8 @@
 import json
 import os
+import random
 from tkinter import ttk
 import tkinter as tk
-
 
 class ItemShopEditor:
     def __init__(
@@ -16,6 +16,8 @@ class ItemShopEditor:
         combined_items = ["Empty"] + map_specific_items + general_items
         combined_items_pro = ["Empty"] + map_specific_items + general_items
         combined_items_pro.remove("ItemBag")
+        self.random_item_pack = combined_items
+        self.random_item_pack_pro = combined_items_pro
 
         self.widgets = {"P0": {}, "P1": {}, "P2": {}}
 
@@ -73,6 +75,19 @@ class ItemShopEditor:
                 self.widgets[phase_name][f"slot{slot_num}"]["price"].insert(
                     0, slot_data.get("price", 0)
                 )
+                
+    def randomize_shop_data(self, phase_name):
+        for slot_num in range(1, 7):
+            self.widgets[phase_name][f"slot{slot_num}"]["item"].set(
+                random.choice(self.random_item_pack_pro if phase_name == "P2" else self.random_item_pack)
+            )
+            self.widgets[phase_name][f"slot{slot_num}"]["count"].set(
+                random.choice([1,2])
+            )
+            self.widgets[phase_name][f"slot{slot_num}"]["price"].delete(0, "end")
+            self.widgets[phase_name][f"slot{slot_num}"]["price"].insert(
+                0,random.choice([1,5,10,15] if phase_name == "P2" else [1,5,10,15,20,25,30,50])
+            )
 
     def save_shop_data(self, phase_name):
         for slot_num in range(1, 7):

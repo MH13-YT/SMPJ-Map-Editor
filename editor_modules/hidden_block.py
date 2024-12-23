@@ -1,5 +1,6 @@
 import os
 import json
+import random
 import tkinter as tk
 from tkinter import ttk
 
@@ -45,7 +46,7 @@ class HiddenBlockDataManager:
     def get_hiddenblock_data(self, map_name):
         return self.hiddenblock_data.get(map_name, [])
 
-    def update_hiddenblock_data(self, map_name, data_type, hiddenblock_data):
+    def update_hiddenblock_data(self, map_name, hiddenblock_data):
         if map_name not in self.hiddenblock_data:
             self.hiddenblock_data[map_name] = {}
         self.hiddenblock_data[map_name] = hiddenblock_data
@@ -176,9 +177,26 @@ class HiddenBlockEditor:
             current_data.append(new_entry)
 
             self.data_manager.update_hiddenblock_data(
-                self.map_name, "HiddenBlock", current_data
+                self.map_name, current_data
             )
             self.data_manager.sync_with_linked_maps(self.map_name)
+            
+    def randomize_hiddenblock_data(self):
+        num_columns = 6
+        hidden_block_data = []
+        for lot_no in range(num_columns):
+            for lot in LOTS:
+                new_entry = {
+                    "No": lot_no,
+                    "Result": lot["data"],
+                    "Rate": random.randint(0, 255),
+                }
+                hidden_block_data.append(new_entry)
+
+        self.data_manager.update_hiddenblock_data(
+            self.map_name, hidden_block_data
+        )
+        self.data_manager.sync_with_linked_maps(self.map_name)
 
     def remove_block(self, lot_no):
         listbox = self.lots[lot_no]["listbox"]
@@ -202,12 +220,12 @@ class HiddenBlockEditor:
                 current_data.remove(block_to_remove)
 
             self.data_manager.update_hiddenblock_data(
-                self.map_name, "HiddenBlock", current_data
+                self.map_name, current_data
             )
             self.data_manager.sync_with_linked_maps(self.map_name)
 
     def load_hiddenblock_data(self, data):
-        self.data_manager.update_hiddenblock_data(self.map_name, "HiddenBlock", data)
+        self.data_manager.update_hiddenblock_data(self.map_name, data)
         self.refresh_data()
 
     def refresh_data(self):

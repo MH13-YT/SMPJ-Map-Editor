@@ -32,7 +32,7 @@ from editor_modules.events import (
 from editor_modules.map_layout import MapLayoutEditor, load_map_layout_mapdata, save_map_layout_mapdata
 
 APP_WIDTH = 1100
-APP_HEIGHT = 1000
+APP_HEIGHT = 1100
 
 general_items = [
     "Stone",
@@ -268,6 +268,21 @@ class MapTab(tk.Frame):
         
         self.map_layout_data = load_map_layout_mapdata(self.WORKSPACE_PATH, self.map_name)
         self.map_layout.load_data(self.map_layout_data)
+        
+    def randomize_data(self):
+        self.koopa_shop.randomize_shop_data("P0")
+        self.koopa_shop.randomize_shop_data("P1")
+        self.koopa_shop.randomize_shop_data("P2")
+        self.kamek_shop.randomize_shop_data("P0")
+        self.kamek_shop.randomize_shop_data("P1")
+        self.kamek_shop.randomize_shop_data("P2")
+        self.item_bag.randomize_items()
+        self.item_mass.randomize_items()
+        self.lucky_events.randomize_event_data()
+        self.unlucky_events.randomize_event_data()
+        self.koopa_mass_events.randomize_event_data()
+        self.hidden_block.randomize_hiddenblock_data()
+        self.map_layout.randomize_data()
 
     def save_data(self):
         self.item_shop_data = self.koopa_shop.save_shop_data("P0")
@@ -374,7 +389,14 @@ class JamboreeMapEditor(tk.Tk):
 
         self.button_frame = tk.Frame(self, width=APP_WIDTH)
         self.button_frame.pack(side="left", padx=10, pady=10)
-
+        self.randomize_button = tk.Button(
+            self.button_frame,
+            text="Randomize Map Data",
+            command=self.randomize_data,
+            width=APP_WIDTH,
+            state="disabled",
+        )
+        self.randomize_button.pack(pady=5)
         self.save_button = tk.Button(
             self.button_frame,
             text="Save Map Data",
@@ -457,6 +479,7 @@ class JamboreeMapEditor(tk.Tk):
                 tab_widget = self.notebook.nametowidget(tab)
                 tab_widget.load_data()
             self.save_button.config(state="normal")
+            self.randomize_button.config(state="normal")
 
     def save_data(self):
         if not os.path.exists(self.WORKSPACE_PATH):
@@ -474,3 +497,11 @@ class JamboreeMapEditor(tk.Tk):
             messagebox.showinfo(
                 "Data Saved", "The workspace files has been modified successfuly"
             )
+            
+    def randomize_data(self):
+        for tab in self.notebook.tabs():
+            tab_widget = self.notebook.nametowidget(tab)
+            tab_widget.randomize_data()
+        messagebox.showinfo(
+                "Data Randomized", "The data has been randomized successfuly"
+        )

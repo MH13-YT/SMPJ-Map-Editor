@@ -1,3 +1,4 @@
+import random
 import tkinter as tk
 from tkinter import ttk
 import json
@@ -321,17 +322,22 @@ class MapLayoutEditor:
                 )
             elif event.button == 3:
                 current_mass_attr = clicked_node["MassAttr"]
-                if current_mass_attr in mass_attr_list:
-                    old_MassAttr = clicked_node["MassAttr"]
-                    new_mass_attr = self.get_next_mass_attr(current_mass_attr)
-                    clicked_node["MassAttr"] = new_mass_attr
-                    self.draw_map()
-                    self.info_last_clicked.config(
-                        text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {old_MassAttr} | Changed to : {clicked_node['MassAttr']}"
-                    )
+                if self.map_index != 7 or clicked_node["NodeNo"] not in range(59,67):
+                    if current_mass_attr in mass_attr_list:
+                        old_MassAttr = clicked_node["MassAttr"]
+                        new_mass_attr = self.get_next_mass_attr(current_mass_attr)
+                        clicked_node["MassAttr"] = new_mass_attr
+                        self.draw_map()
+                        self.info_last_clicked.config(
+                            text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {old_MassAttr} | Changed to : {clicked_node['MassAttr']}"
+                        )
+                    else:
+                        self.info_last_clicked.config(
+                            text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, ({clicked_node['MassAttr']} isn't supported actually)"
+                        )
                 else:
                     self.info_last_clicked.config(
-                        text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, ({clicked_node['MassAttr']} isn't supported actually)"
+                        text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, (NodeNo:{clicked_node['NodeNo']} will be rewriten by the game (Wiggler Path (59-65 on Mega Wiggler Tree Party / Map07)"
                     )
 
         elif clicked_arrow:
@@ -371,6 +377,13 @@ class MapLayoutEditor:
 
     def load_data(self, map_layout_data):
         self.map_layout_data = map_layout_data
+        self.draw_map()
+        
+    def randomize_data(self): # verify if node["MassAttr"] is in mass_attr_list
+        for node in self.map_layout_data["MapNode"]:
+            if self.map_index != 7 or node["NodeNo"] not in range(59,67):
+                if node["MassAttr"] in mass_attr_list:
+                    node["MassAttr"] = random.choice(mass_attr_list)
         self.draw_map()
 
     def save_data(self):
