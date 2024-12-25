@@ -29,10 +29,14 @@ from editor_modules.events import (
     load_event_mapdata,
     save_event_mapdata,
 )
-from editor_modules.map_layout import MapLayoutEditor, load_map_layout_mapdata, save_map_layout_mapdata
+from editor_modules.map_layout import (
+    MapLayoutEditor,
+    load_map_layout_mapdata,
+    save_map_layout_mapdata,
+)
 
-APP_WIDTH = 1100
-APP_HEIGHT = 1100
+APP_WIDTH = 1150
+APP_HEIGHT = 1150
 
 general_items = [
     "Stone",
@@ -89,14 +93,13 @@ map_items = {
 }
 
 map_layout_settings = {
-    "Map01": {"reverse_x":False,"reverse_y":True},
-    "Map02": {"reverse_x":False,"reverse_y":True},
-    "Map03": {"reverse_x":False,"reverse_y":True},
-    "Map04": {"reverse_x":False,"reverse_y":True},
-    "Map05": {"reverse_x":False,"reverse_y":True},
-    "Map06": {"reverse_x":False,"reverse_y":True},
-    "Map07": {"reverse_x":False,"reverse_y":True},
-    
+    "Map01": {"reverse_x": False, "reverse_y": True},
+    "Map02": {"reverse_x": False, "reverse_y": True},
+    "Map03": {"reverse_x": False, "reverse_y": True},
+    "Map04": {"reverse_x": False, "reverse_y": True},
+    "Map05": {"reverse_x": False, "reverse_y": True},
+    "Map06": {"reverse_x": False, "reverse_y": True},
+    "Map07": {"reverse_x": False, "reverse_y": True},
 }
 
 
@@ -229,7 +232,13 @@ class MapTab(tk.Frame):
 
         self.map_layout_tab = ttk.Frame(self.main_notebook)
         self.main_notebook.add(self.map_layout_tab, text="Map Layout")
-        self.map_layout = MapLayoutEditor(self.map_layout_tab, self.map_name,self.WORKSPACE_PATH,map_layout_settings[map_name]["reverse_x"],map_layout_settings[map_name]["reverse_y"])
+        self.map_layout = MapLayoutEditor(
+            self.map_layout_tab,
+            self.map_name,
+            self.WORKSPACE_PATH,
+            map_layout_settings[map_name]["reverse_x"],
+            map_layout_settings[map_name]["reverse_y"],
+        )
 
     def load_data(self):
         self.item_shop_data = load_itemshop_mapdata(self.WORKSPACE_PATH, self.map_name)
@@ -265,10 +274,12 @@ class MapTab(tk.Frame):
             self.WORKSPACE_PATH, self.map_name
         )
         self.hidden_block.load_hiddenblock_data(self.hidden_block_data)
-        
-        self.map_layout_data = load_map_layout_mapdata(self.WORKSPACE_PATH, self.map_name)
+
+        self.map_layout_data = load_map_layout_mapdata(
+            self.WORKSPACE_PATH, self.map_name
+        )
         self.map_layout.load_data(self.map_layout_data)
-        
+
     def randomize_data(self):
         self.koopa_shop.randomize_shop_data("P0")
         self.koopa_shop.randomize_shop_data("P1")
@@ -292,45 +303,45 @@ class MapTab(tk.Frame):
         self.item_shop_data = self.kamek_shop.save_shop_data("P1")
         self.item_shop_data = self.kamek_shop.save_shop_data("P2")
         save_itemshop_mapdata(self.WORKSPACE_PATH, self.map_name, self.item_shop_data)
-        
+
         self.item_bag_data = self.item_bag.save_items()
         save_itembag_mapdata(self.WORKSPACE_PATH, self.item_bag_data, self.map_name)
-        
+
         self.item_mass_data = self.item_mass.save_items()
         save_itemmass_mapdata(self.WORKSPACE_PATH, self.item_mass_data, self.map_name)
-        
+
         self.luckymass_data = self.event_data_manager.get_event_data(
             self.map_name, "LuckyMass"
         )
         save_event_mapdata(
             self.WORKSPACE_PATH, self.luckymass_data, self.map_name, "LuckyMass"
         )
-        
+
         self.unluckymass_data = self.event_data_manager.get_event_data(
             self.map_name, "UnluckyMass"
         )
         save_event_mapdata(
             self.WORKSPACE_PATH, self.unluckymass_data, self.map_name, "UnluckyMass"
         )
-        
+
         self.koopamass_data = self.event_data_manager.get_event_data(
             self.map_name, "KoopaMass"
         )
         save_event_mapdata(
             self.WORKSPACE_PATH, self.koopamass_data, self.map_name, "KoopaMass"
         )
-        
-        self.hidden_block_data = self.hiddenblock_data_manager.get_hiddenblock_data(self.map_name)
+
+        self.hidden_block_data = self.hiddenblock_data_manager.get_hiddenblock_data(
+            self.map_name
+        )
         save_hiddenblock_mapdata(
             self.WORKSPACE_PATH, self.hidden_block_data, self.map_name
         )
-        
+
         self.map_layout_data = self.map_layout.save_data()
-        save_map_layout_mapdata(self.WORKSPACE_PATH, self.map_name, self.map_layout_data)
-        
-        
-        
-        
+        save_map_layout_mapdata(
+            self.WORKSPACE_PATH, self.map_name, self.map_layout_data
+        )
 
 
 class JamboreeMapEditor(tk.Tk):
@@ -387,6 +398,46 @@ class JamboreeMapEditor(tk.Tk):
             self.item_bag_data[map_name] = []
             self.item_mass_data[map_name] = []
 
+        self.speed_frame = tk.Frame(self, width=APP_WIDTH)
+        self.speed_frame.pack(side="top", padx=10, pady=10)
+
+        self.speed_label = tk.Label(self.speed_frame, text="Player Move Parameters")
+        self.speed_label.pack(anchor="center")
+
+        self.speed_entries_frame = tk.Frame(self.speed_frame)
+        self.speed_entries_frame.pack()
+
+        standard_speed_column_frame = tk.Frame(self.speed_entries_frame)
+        standard_speed_column_frame.pack(side="left", padx=10)
+        standard_speed_label = tk.Label(
+            standard_speed_column_frame, text="Standard Speed"
+        )
+        standard_speed_label.pack(anchor="center")
+        self.standard_speed_entry = ttk.Spinbox(
+            standard_speed_column_frame, from_=1, to=150, increment=1, width=15
+        )
+        self.standard_speed_entry.pack(anchor="center", pady=5)
+
+        circuit_speed_column_frame = tk.Frame(self.speed_entries_frame)
+        circuit_speed_column_frame.pack(side="left", padx=10)
+        circuit_speed_label = tk.Label(circuit_speed_column_frame, text="Circuit Speed")
+        circuit_speed_label.pack(anchor="center")
+        self.circuit_speed_entry = ttk.Spinbox(
+            circuit_speed_column_frame, from_=1, to=150, increment=1, width=15
+        )
+        self.circuit_speed_entry.pack(anchor="center", pady=5)
+
+        machdice_speed_column_frame = tk.Frame(self.speed_entries_frame)
+        machdice_speed_column_frame.pack(side="left", padx=10)
+        machdice_speed_label = tk.Label(
+            machdice_speed_column_frame, text="Machdice Speed"
+        )
+        machdice_speed_label.pack(anchor="center")
+        self.machdice_speed_entry = ttk.Spinbox(
+            machdice_speed_column_frame, from_=1, to=150, increment=1, width=15
+        )
+        self.machdice_speed_entry.pack(anchor="center", pady=5)
+
         self.button_frame = tk.Frame(self, width=APP_WIDTH)
         self.button_frame.pack(side="left", padx=10, pady=10)
         self.randomize_button = tk.Button(
@@ -405,15 +456,60 @@ class JamboreeMapEditor(tk.Tk):
             state="disabled",
         )
         self.save_button.pack(pady=5)
-        self.after(100, self.load_data)
+        self.after(150, self.load_data)
+
+    def load_player_move_parameters(self):
+        file_path = os.path.join(
+            self.WORKSPACE_PATH,
+            "bd~bd00.nx",
+            "bd",
+            "bd00",
+            "data",
+            "bd00_PlayerMove.json",
+        )
+        try:
+            with open(file_path, "r", encoding="utf-8-sig") as json_file:
+                player_move_parameters_data = json.load(json_file)
+                self.standard_speed_entry.set(
+                    player_move_parameters_data["PlayerMove"][0]["MaxSpeed"]
+                )
+                self.circuit_speed_entry.set(
+                    player_move_parameters_data["PlayerMove"][0]["CircuitSpeed"]
+                )
+                self.machdice_speed_entry.set(
+                    player_move_parameters_data["PlayerMove"][0]["MachSpeed"]
+                )
+        except Exception as error:
+            print(f"Cannot Read File {file_path}:\n {error}\n")
+        return player_move_parameters_data
+    
+    def save_player_move_parameters(self):
+        file_path = os.path.join(
+            self.WORKSPACE_PATH,
+            "bd~bd00.nx",
+            "bd",
+            "bd00",
+            "data",
+            "bd00_PlayerMove.json",
+        )
+        try:
+            player_move_parameters_data = {}
+            with open(file_path, "r", encoding="utf-8-sig") as json_file:
+                player_move_parameters_data = json.load(json_file)
+                for player_move in player_move_parameters_data["PlayerMove"]:
+                    player_move["MaxSpeed"] = int(self.standard_speed_entry.get())
+                    player_move["CircuitSpeed"] = int(self.circuit_speed_entry.get())
+                    player_move["MachSpeed"] = int(self.machdice_speed_entry.get())
+            with open(file_path, "w", encoding="utf-8-sig") as json_file:
+                json.dump(player_move_parameters_data, json_file, indent=4)
+        except Exception as error:
+            print(f"Cannot Read File {file_path}:\n {error}\n")
 
     def load_data(self):
         if not os.path.exists(
             os.path.join(self.WORKSPACE_PATH, "bd~bd00.nx", "bd", "bd00", "data")
         ):
-            messagebox.showerror(
-                "Error", "The workspace data cannot be read correctly"
-            )
+            messagebox.showerror("Error", "The workspace data cannot be read correctly")
         else:
             errors = []
             for i in range(1, 8):
@@ -454,11 +550,32 @@ class JamboreeMapEditor(tk.Tk):
                         f"bd00_UnluckyMass_Map{str(i).zfill(2)}.json",
                     ),
                     os.path.join(
+                        f"bd~bd{str(i).zfill(2)}.nx",
+                        "bd",
+                        f"bd{str(i).zfill(2)}",
+                        "data",
+                        f"bd{str(i).zfill(2)}_MapNode.json",
+                    ),
+                    os.path.join(
+                        f"bd~bd{str(i).zfill(2)}.nx",
+                        "bd",
+                        f"bd{str(i).zfill(2)}",
+                        "data",
+                        f"bd{str(i).zfill(2)}_MapPath.json",
+                    ),
+                    os.path.join(
                         "bd~bd00.nx",
                         "bd",
                         "bd00",
                         "data",
                         "bd00_HiddenBlock.json",
+                    ),
+                    os.path.join(
+                        "bd~bd00.nx",
+                        "bd",
+                        "bd00",
+                        "data",
+                        "bd00_PlayerMove.json",
                     ),
                 ]:
                     file_path = os.path.join(self.WORKSPACE_PATH, file)
@@ -474,7 +591,7 @@ class JamboreeMapEditor(tk.Tk):
                     "Error", f"The following errors occurred:\n{error_message}"
                 )
                 return
-
+            self.load_player_move_parameters()
             for tab in self.notebook.tabs():
                 tab_widget = self.notebook.nametowidget(tab)
                 tab_widget.load_data()
@@ -491,17 +608,18 @@ class JamboreeMapEditor(tk.Tk):
                     "The Event tab compliance check failed, please check if every rate settings are valid",
                 )
                 return
+            self.save_player_move_parameters()
             for tab in self.notebook.tabs():
                 tab_widget = self.notebook.nametowidget(tab)
                 tab_widget.save_data()
             messagebox.showinfo(
                 "Data Saved", "The workspace files has been modified successfuly"
             )
-            
+
     def randomize_data(self):
         for tab in self.notebook.tabs():
             tab_widget = self.notebook.nametowidget(tab)
             tab_widget.randomize_data()
         messagebox.showinfo(
-                "Data Randomized", "The data has been randomized successfuly"
+            "Data Randomized", "The data has been randomized successfuly"
         )
