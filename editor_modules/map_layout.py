@@ -5,8 +5,9 @@ import json
 import os
 from matplotlib import patheffects
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch, Circle
+from matplotlib.patches import FancyArrowPatch, Circle, Polygon
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
 
 
 mass_attr_colors = {
@@ -80,7 +81,7 @@ class MapLayoutEditor:
             color_box.pack(side="top", padx=1, pady=1)
             label = ttk.Label(legend_frame, text=mass_attr)
             label.pack(side="top", padx=2, pady=2)
-        controls_label = ttk.Label(legend_frame,text="Controls")
+        controls_label = ttk.Label(legend_frame, text="Controls")
         controls_label.pack(side="top", padx=2, pady=2)
         controls_map = ttk.Label(
             legend_frame,
@@ -97,7 +98,6 @@ class MapLayoutEditor:
             text="🖱️ Click ←/→ : Read/Write",
         )
         controls_data.pack(side="top", padx=2, pady=2)
-        
 
         self.fig, self.ax = plt.subplots(figsize=(100, 200))
         self.fig.set_size_inches(self.frame.winfo_width(), self.frame.winfo_height())
@@ -241,10 +241,29 @@ class MapLayoutEditor:
             if node_no not in node_positions:
                 continue
             x, y = node_positions[node_no]
-
-            node_patch = self.ax.add_patch(
-                Circle((x, y), 0.3 if mass_attr else 0.1, color=node_color, alpha=0.7)
-            )
+            if node_data["NpcNodeNo0"] != -1:
+                node_patch = self.ax.add_patch(
+                    Polygon(
+                        np.column_stack(
+                            [
+                                x
+                                + 0.3
+                                * np.cos(np.linspace(0, 2 * np.pi, 4, endpoint=False)),
+                                y
+                                + 0.3
+                                * np.sin(np.linspace(0, 2 * np.pi, 4, endpoint=False)),
+                            ]
+                        ),
+                        color=node_color,
+                        alpha=0.7,
+                    )
+                )
+            else:
+                node_patch = self.ax.add_patch(
+                    Circle(
+                        (x, y), 0.3 if mass_attr else 0.1, color=node_color, alpha=0.7
+                    )
+                )
             self.node_patches[node_no] = node_patch
 
         x_positions = [x for x, y in node_positions.values()]
@@ -322,22 +341,29 @@ class MapLayoutEditor:
                 )
             elif event.button == 3:
                 current_mass_attr = clicked_node["MassAttr"]
-                if self.map_index != 7 or clicked_node["NodeNo"] not in range(59,67):
-                    if current_mass_attr in mass_attr_list:
-                        old_MassAttr = clicked_node["MassAttr"]
-                        new_mass_attr = self.get_next_mass_attr(current_mass_attr)
-                        clicked_node["MassAttr"] = new_mass_attr
-                        self.draw_map()
-                        self.info_last_clicked.config(
-                            text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {old_MassAttr} | Changed to : {clicked_node['MassAttr']}"
-                        )
+                if clicked_node["NpcNodeNo0"] == -1:
+                    if self.map_index != 7 or clicked_node["NodeNo"] not in range(
+                        59, 67
+                    ):
+                        if current_mass_attr in mass_attr_list:
+                            old_MassAttr = clicked_node["MassAttr"]
+                            new_mass_attr = self.get_next_mass_attr(current_mass_attr)
+                            clicked_node["MassAttr"] = new_mass_attr
+                            self.draw_map()
+                            self.info_last_clicked.config(
+                                text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {old_MassAttr} | Changed to : {clicked_node['MassAttr']}"
+                            )
+                        else:
+                            self.info_last_clicked.config(
+                                text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, ({clicked_node['MassAttr']} isn't supported actually)"
+                            )
                     else:
                         self.info_last_clicked.config(
-                            text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, ({clicked_node['MassAttr']} isn't supported actually)"
+                            text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, (NodeNo:{clicked_node['NodeNo']} will be rewriten by the game (Wiggler Path (59-65 on Mega Wiggler Tree Party / Map07)"
                         )
                 else:
                     self.info_last_clicked.config(
-                        text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, (NodeNo:{clicked_node['NodeNo']} will be rewriten by the game (Wiggler Path (59-65 on Mega Wiggler Tree Party / Map07)"
+                        text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, (NodeNo:{clicked_node['NodeNo']} is a NPC Linked Node)"
                     )
 
         elif clicked_arrow:
@@ -378,11 +404,11 @@ class MapLayoutEditor:
     def load_data(self, map_layout_data):
         self.map_layout_data = map_layout_data
         self.draw_map()
-        
-    def randomize_data(self): # verify if node["MassAttr"] is in mass_attr_list
+
+    def randomize_data(self):  # verify if node["MassAttr"] is in mass_attr_list
         for node in self.map_layout_data["MapNode"]:
-            if self.map_index != 7 or node["NodeNo"] not in range(59,67):
-                if node["MassAttr"] in mass_attr_list:
+            if self.map_index != 7 or node["NodeNo"] not in range(59, 67):
+                if node["MassAttr"] in mass_attr_list and node["NpcNodeNo0"] == -1:
                     node["MassAttr"] = random.choice(mass_attr_list)
         self.draw_map()
 
