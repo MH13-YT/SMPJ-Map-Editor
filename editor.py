@@ -36,7 +36,7 @@ from editor_modules.map_layout import (
 )
 
 APP_WIDTH = 1150
-APP_HEIGHT = 1150
+APP_HEIGHT = 750
 
 general_items = [
     "Stone",
@@ -370,7 +370,7 @@ class JamboreeMapEditor(tk.Tk):
             "TNotebook.Tab", width=APP_WIDTH // 7, padding=[5, 5], anchor="center"
         )
 
-        self.notebook = ttk.Notebook(self, style="TNotebook")
+        self.notebook = ttk.Notebook(self, style="TNotebook", height=600)
         self.notebook.pack(expand=1, fill="both")
 
         for i in range(1, 8):
@@ -397,6 +397,9 @@ class JamboreeMapEditor(tk.Tk):
             }
             self.item_bag_data[map_name] = []
             self.item_mass_data[map_name] = []
+            
+        self.general_frame = tk.Frame(self)
+        self.general_frame.pack(side="right", padx=10, pady=10)
 
         self.speed_frame = tk.Frame(self, width=APP_WIDTH)
         self.speed_frame.pack(side="top", padx=10, pady=10)
@@ -408,7 +411,7 @@ class JamboreeMapEditor(tk.Tk):
         self.speed_entries_frame.pack()
 
         standard_speed_column_frame = tk.Frame(self.speed_entries_frame)
-        standard_speed_column_frame.pack(side="left", padx=10)
+        standard_speed_column_frame.pack(side="left", padx=5)
         standard_speed_label = tk.Label(
             standard_speed_column_frame, text="Standard Speed"
         )
@@ -419,7 +422,7 @@ class JamboreeMapEditor(tk.Tk):
         self.standard_speed_entry.pack(anchor="center", pady=5)
 
         circuit_speed_column_frame = tk.Frame(self.speed_entries_frame)
-        circuit_speed_column_frame.pack(side="left", padx=10)
+        circuit_speed_column_frame.pack(side="left", padx=5)
         circuit_speed_label = tk.Label(circuit_speed_column_frame, text="Circuit Speed")
         circuit_speed_label.pack(anchor="center")
         self.circuit_speed_entry = ttk.Spinbox(
@@ -428,7 +431,7 @@ class JamboreeMapEditor(tk.Tk):
         self.circuit_speed_entry.pack(anchor="center", pady=5)
 
         machdice_speed_column_frame = tk.Frame(self.speed_entries_frame)
-        machdice_speed_column_frame.pack(side="left", padx=10)
+        machdice_speed_column_frame.pack(side="left", padx=5)
         machdice_speed_label = tk.Label(
             machdice_speed_column_frame, text="Machdice Speed"
         )
@@ -438,22 +441,23 @@ class JamboreeMapEditor(tk.Tk):
         )
         self.machdice_speed_entry.pack(anchor="center", pady=5)
 
-        self.button_frame = tk.Frame(self, width=APP_WIDTH)
-        self.button_frame.pack(side="left", padx=10, pady=10)
+
+        self.button_frame = tk.Frame(self.general_frame,width=100,)
+        self.button_frame.pack(side="left", padx=5, pady=10)
         self.randomize_button = tk.Button(
             self.button_frame,
             text="Randomize Map Data",
             command=self.randomize_data,
-            width=APP_WIDTH,
             state="disabled",
+            width=100,
         )
         self.randomize_button.pack(pady=5)
         self.save_button = tk.Button(
             self.button_frame,
             text="Save Map Data",
             command=self.save_data,
-            width=APP_WIDTH,
             state="disabled",
+            width=100,
         )
         self.save_button.pack(pady=5)
         self.after(150, self.load_data)

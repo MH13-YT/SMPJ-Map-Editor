@@ -37,7 +37,7 @@ mass_attr_list = [
     "Unlucky",
     "VS",
     "Koopa",
-    # "SpotItemShopNokonoko", "SpotItemShopKameck", "SpotBranch", "SpotEvent", "SpotBranchKey", "SpotTeresa"
+    # "Happening","SpotItemShopNokonoko", "SpotItemShopKameck", "SpotBranch", "SpotEvent", "SpotBranchKey", "SpotTeresa"
 ]
 
 
@@ -54,13 +54,15 @@ class MapLayoutEditor:
     ):
         self.frame = ttk.Frame(parent)
         self.frame.pack(side="left", padx=5, pady=5, fill="both", expand=True)
+        self.map_frame = ttk.Frame(self.frame, width=600, height=300)
+        self.map_frame.pack(side="left", fill="both", expand=True)
+        self.position_text = "Zoom: (xlim, ylim) | Center: (x, y)"
+        self.last_clicked_text = "Last Clicked : None"
 
         self.info_label = ttk.Label(
-            self.frame, text="Zoom: (xlim, ylim) | Center: (x, y)"
+            self.map_frame, text=f"{self.position_text}\n{self.last_clicked_text}"
         )
         self.info_label.pack(side="bottom", fill="x", padx=5, pady=5)
-        self.info_last_clicked = ttk.Label(self.frame, text="Last Clicked: None")
-        self.info_last_clicked.pack(side="bottom", fill="x", padx=5, pady=5)
 
         self.map_name = map_name
         self.map_index = int(map_name.replace("Map", ""))
@@ -73,35 +75,49 @@ class MapLayoutEditor:
 
         legend_frame = ttk.Frame(self.frame)
         legend_frame.pack(side="right", padx=5, pady=5, fill="y")
-
-        ttk.Label(legend_frame, text="Map Key").pack()
-
+        mass_legend_frame = ttk.Frame(legend_frame)
+        mass_legend_frame.pack(side="top", padx=5, pady=5)
+        ttk.Label(mass_legend_frame, text="Map MassAttr List").pack()
+        mass_legend_list_1_frame = ttk.Frame(mass_legend_frame)
+        mass_legend_list_1_frame.pack(side="left", padx=5, pady=5,anchor="n")
+        mass_legend_list_2_frame = ttk.Frame(mass_legend_frame)
+        mass_legend_list_2_frame.pack(side="right", padx=5, pady=5, anchor="n")
+        count = 0
         for mass_attr, color in mass_attr_colors.items():
-            color_box = tk.Canvas(legend_frame, width=20, height=15, bg=color)
-            color_box.pack(side="top", padx=1, pady=1)
-            label = ttk.Label(legend_frame, text=mass_attr)
-            label.pack(side="top", padx=2, pady=2)
-        controls_label = ttk.Label(legend_frame, text="Controls")
+            count += 1
+            if count % 2 == 0:
+                color_box = tk.Canvas(mass_legend_list_2_frame, width=20, height=15, bg=color)
+                color_box.pack(side="top", padx=1, pady=1)
+                label = ttk.Label(mass_legend_list_2_frame, text=mass_attr)
+                label.pack(side="top", padx=2, pady=2)
+            else:
+                color_box = tk.Canvas(mass_legend_list_1_frame, width=20, height=15, bg=color)
+                color_box.pack(side="top", padx=1, pady=1)
+                label = ttk.Label(mass_legend_list_1_frame, text=mass_attr)
+                label.pack(side="top", padx=2, pady=2)
+        control_frame = ttk.Frame(legend_frame)
+        control_frame.pack(side="top", padx=5, pady=5)
+        controls_label = ttk.Label(control_frame, text="Controls")
         controls_label.pack(side="top", padx=2, pady=2)
         controls_map = ttk.Label(
-            legend_frame,
+            control_frame,
             text="⌨️Arrow Keys : Move Map",
         )
         controls_map.pack(side="top", padx=2, pady=2)
         controls_zoom = ttk.Label(
-            legend_frame,
-            text="🖱️Scroll ↑/↓ : Zoom In/Out",
+            control_frame,
+            text="🖱️Scroll Up/Down : Zoom In/Out",
         )
         controls_zoom.pack(side="top", padx=2, pady=2)
         controls_data = ttk.Label(
-            legend_frame,
-            text="🖱️ Click ←/→ : Read/Write",
+            control_frame,
+            text="🖱️ Left/Right Click : Read/Write",
         )
         controls_data.pack(side="top", padx=2, pady=2)
 
-        self.fig, self.ax = plt.subplots(figsize=(100, 200))
-        self.fig.set_size_inches(self.frame.winfo_width(), self.frame.winfo_height())
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
+        self.fig, self.ax = plt.subplots(figsize=(40, 40))
+        self.fig.set_size_inches(self.map_frame.winfo_width(), self.map_frame.winfo_height())
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.map_frame)
         self.canvas_widget = self.canvas.get_tk_widget()
         self.canvas_widget.pack(fill="both", expand=True)
 
@@ -140,9 +156,8 @@ class MapLayoutEditor:
     def update_info_label(self):
         zoom = self.get_zoom()
         center = self.get_center()
-        self.info_label.config(
-            text=f"Zoom: ({zoom[0][0]:.2f}, {zoom[1][0]:.2f}) | Center: ({center[0]:.2f}, {center[1]:.2f})"
-        )
+        self.position_text = f"Zoom: ({zoom[0][0]:.2f}, {zoom[1][0]:.2f}) | Center: ({center[0]:.2f}, {center[1]:.2f})"
+        self.info_label.config(text=f"{self.position_text}\n{self.last_clicked_text}")
 
     def on_zoom(self, event):
         scale_factor = 1.1 if event.button == "down" else 0.9
@@ -157,18 +172,6 @@ class MapLayoutEditor:
         self.ax.set_ylim(ylim)
         self.fig.canvas.draw()
         self.update_info_label()
-
-    def create_legend(self):
-        legend_frame = ttk.Frame(self.frame)
-        legend_frame.pack(side="right", padx=5, pady=5, fill="y")
-
-        ttk.Label(legend_frame, text="Map Key").pack()
-
-        for mass_attr, color in mass_attr_colors.items():
-            color_box = tk.Canvas(legend_frame, width=20, height=20, bg=color)
-            color_box.pack(side="top", padx=2, pady=2)
-            label = ttk.Label(legend_frame, text=mass_attr)
-            label.pack(side="top", padx=2, pady=2)
 
     def draw_map(self):
         self.ax.clear()
@@ -336,9 +339,8 @@ class MapLayoutEditor:
 
         if clicked_node:
             if event.button == 1:
-                self.info_last_clicked.config(
-                    text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Read | MassAttr: {clicked_node['MassAttr']}"
-                )
+                self.last_clicked_text = f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Read | MassAttr: {clicked_node['MassAttr']}"
+
             elif event.button == 3:
                 current_mass_attr = clicked_node["MassAttr"]
                 if clicked_node["NpcNodeNo0"] == -1:
@@ -350,27 +352,19 @@ class MapLayoutEditor:
                             new_mass_attr = self.get_next_mass_attr(current_mass_attr)
                             clicked_node["MassAttr"] = new_mass_attr
                             self.draw_map()
-                            self.info_last_clicked.config(
-                                text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {old_MassAttr} | Changed to : {clicked_node['MassAttr']}"
-                            )
+                            self.last_clicked_text = f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {old_MassAttr} | Changed to : {clicked_node['MassAttr']}"
                         else:
-                            self.info_last_clicked.config(
-                                text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, ({clicked_node['MassAttr']} isn't supported actually)"
-                            )
+                            self.last_clicked_text = f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, ({clicked_node['MassAttr']} isn't supported actually)"
                     else:
-                        self.info_last_clicked.config(
-                            text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, (NodeNo:{clicked_node['NodeNo']} will be rewriten by the game (Wiggler Path (59-65 on Mega Wiggler Tree Party / Map07)"
-                        )
+                        self.last_clicked_text = f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, (NodeNo:{clicked_node['NodeNo']} will be rewriten by the game (Wiggler Path : Mega Wiggler's Tree Party)"
                 else:
-                    self.info_last_clicked.config(
-                        text=f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, (NodeNo:{clicked_node['NodeNo']} is a NPC Linked Node)"
-                    )
+                    self.last_clicked_text = f"Last Clicked : Node: {clicked_node['NodeNo']} | Mode : Edit | MassAttr: {clicked_node['MassAttr']} | Abort edit, (NodeNo:{clicked_node['NodeNo']} is a NPC Linked Node)"
 
         elif clicked_arrow:
             nodes = clicked_arrow["nodes"]
-            self.info_last_clicked.config(
-                text=f"Last Clicked : Path: {nodes['origin_node']}-{nodes['target_node']} | Mode : Read | Source Node:{nodes['origin_node']} -> Target Node:{nodes['target_node']}"
-            )
+            self.last_clicked_text = f"Last Clicked : Path: {nodes['origin_node']}-{nodes['target_node']} | Mode : Read | Source Node:{nodes['origin_node']} -> Target Node:{nodes['target_node']}"
+        
+        self.info_label.config(text=f"{self.position_text} |=| {self.last_clicked_text}")
 
         if self.prev_zoom and self.prev_center:
             self.set_zoom(self.prev_zoom[0], self.prev_zoom[1])
@@ -404,7 +398,6 @@ class MapLayoutEditor:
     def load_data(self, map_layout_data):
         self.map_layout_data = map_layout_data
         self.draw_map()
-
     def randomize_data(self):  # verify if node["MassAttr"] is in mass_attr_list
         for node in self.map_layout_data["MapNode"]:
             if self.map_index != 7 or node["NodeNo"] not in range(59, 67):
