@@ -52,13 +52,14 @@ class MapLayoutEditor:
         initial_zoom=None,
         initial_position=None,
     ):
-        self.frame = ttk.Frame(parent)
+        self.frame = tk.Frame(parent,bg="gray")
         self.frame.pack(side="left", padx=5, pady=5, fill="both", expand=True)
-        self.map_frame = ttk.Frame(self.frame, width=600, height=300)
-        self.map_frame.pack(side="left", fill="both", expand=True)
+        self.map_frame = tk.Frame(self.frame, bg="green",width=1400)
+        self.map_frame.pack(fill="both", expand=False)
         self.position_text = "Zoom: (xlim, ylim) | Center: (x, y)"
         self.last_clicked_text = "Last Clicked : None"
-
+        self.map_fig = tk.Frame(self.map_frame)
+        self.map_fig.pack(side="top", fill="x", padx=5, pady=5)
         self.info_label = ttk.Label(
             self.map_frame, text=f"{self.position_text}\n{self.last_clicked_text}"
         )
@@ -73,14 +74,14 @@ class MapLayoutEditor:
         self.prev_zoom = None
         self.prev_center = None
 
-        legend_frame = ttk.Frame(self.frame)
+        legend_frame = tk.Frame(self.frame, bg="red")
         legend_frame.pack(side="right", padx=5, pady=5, fill="y")
-        mass_legend_frame = ttk.Frame(legend_frame)
+        mass_legend_frame = tk.Frame(legend_frame, width=200)
         mass_legend_frame.pack(side="top", padx=5, pady=5)
         ttk.Label(mass_legend_frame, text="Map MassAttr List").pack()
-        mass_legend_list_1_frame = ttk.Frame(mass_legend_frame)
+        mass_legend_list_1_frame = tk.Frame(mass_legend_frame)
         mass_legend_list_1_frame.pack(side="left", padx=5, pady=5,anchor="n")
-        mass_legend_list_2_frame = ttk.Frame(mass_legend_frame)
+        mass_legend_list_2_frame = tk.Frame(mass_legend_frame)
         mass_legend_list_2_frame.pack(side="right", padx=5, pady=5, anchor="n")
         count = 0
         for mass_attr, color in mass_attr_colors.items():
@@ -117,7 +118,7 @@ class MapLayoutEditor:
 
         self.fig, self.ax = plt.subplots(figsize=(40, 40))
         self.fig.set_size_inches(self.map_frame.winfo_width(), self.map_frame.winfo_height())
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.map_frame)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.map_fig)
         self.canvas_widget = self.canvas.get_tk_widget()
         self.canvas_widget.pack(fill="both", expand=True)
 
