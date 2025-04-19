@@ -139,7 +139,7 @@ def create_workspace():
 def main_interface():
     root = tk.Tk()
     root.title("SMPJ Map Editor")
-    root.geometry("280x220")
+    root.geometry("280x240")
     root.resizable(False, False)
 
     selected_workspace = tk.StringVar()

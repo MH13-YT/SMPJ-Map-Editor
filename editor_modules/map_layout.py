@@ -22,7 +22,7 @@ mass_attr_colors = {
     "Koopa": "black",
     "SpotTeresa": "silver",
     "SpotItemShopNokonoko": "darkred",
-    "SpotItemShopKameck": "darkred",
+    "SpotItemShopKameck": "darkblue",
     "SpotBranch": "gray",
     "SpotEvent": "indigo",
     "SpotBranchKey": "yellow",
@@ -54,12 +54,15 @@ class MapLayoutEditor:
     ):
         self.frame = ttk.Frame(parent)
         self.frame.pack(padx=5, pady=5, fill="both", expand=True)
+        self.frame.columnconfigure(0, weight=4)
+        self.frame.columnconfigure(1, weight=1)
+        self.frame.rowconfigure(0, weight=1)
         self.map_frame = ttk.Frame(self.frame)
-        self.map_frame.pack(side="left",padx=5, pady=5, fill="both", expand=True)
+        self.map_frame.grid(row=0, column=0, sticky="nsew")
         self.position_text = "Zoom: (xlim, ylim) | Center: (x, y)"
         self.last_clicked_text = "Last Clicked : None"
         self.map_fig = ttk.Frame(self.map_frame)
-        self.map_fig.pack(side="top", fill="both", padx=5, pady=5,expand=True)
+        self.map_fig.pack(side="top", fill="both", padx=5, pady=5, expand=True)
         self.info_label = ttk.Label(
             self.map_frame, text=f"{self.position_text}\n{self.last_clicked_text}"
         )
@@ -75,26 +78,28 @@ class MapLayoutEditor:
         self.prev_center = None
 
         legend_frame = ttk.Frame(self.frame)
-        legend_frame.pack(side="right", padx=5, pady=5, fill="y")
-        mass_legend_frame = ttk.Frame(legend_frame, width=200)
+        legend_frame.grid(row=0, column=1, sticky="nsew")
+        mass_legend_frame = ttk.Frame(legend_frame, width=300)
         mass_legend_frame.pack(side="top", padx=5, pady=5)
         ttk.Label(mass_legend_frame, text="Map MassAttr List").pack()
         mass_legend_list_1_frame = ttk.Frame(mass_legend_frame)
         mass_legend_list_1_frame.pack(side="left", padx=5, pady=5,anchor="n")
+        supported_label = ttk.Label(mass_legend_list_1_frame, text="Supported")
+        supported_label.pack(side="top", padx=2, pady=2)
         mass_legend_list_2_frame = ttk.Frame(mass_legend_frame)
         mass_legend_list_2_frame.pack(side="right", padx=5, pady=5, anchor="n")
-        count = 0
+        unsupported_label = ttk.Label(mass_legend_list_2_frame, text="Unsupported")
+        unsupported_label.pack(side="top", padx=2, pady=2)
         for mass_attr, color in mass_attr_colors.items():
-            count += 1
-            if count % 2 == 0:
-                color_box = tk.Canvas(mass_legend_list_2_frame, width=20, height=15, bg=color)
-                color_box.pack(side="top", padx=1, pady=1)
-                label = ttk.Label(mass_legend_list_2_frame, text=mass_attr)
-                label.pack(side="top", padx=2, pady=2)
-            else:
+            if mass_attr in mass_attr_list:
                 color_box = tk.Canvas(mass_legend_list_1_frame, width=20, height=15, bg=color)
                 color_box.pack(side="top", padx=1, pady=1)
                 label = ttk.Label(mass_legend_list_1_frame, text=mass_attr)
+                label.pack(side="top", padx=2, pady=2)
+            else:
+                color_box = tk.Canvas(mass_legend_list_2_frame, width=20, height=15, bg=color)
+                color_box.pack(side="top", padx=1, pady=1)
+                label = ttk.Label(mass_legend_list_2_frame, text=mass_attr)
                 label.pack(side="top", padx=2, pady=2)
         control_frame = ttk.Frame(legend_frame)
         control_frame.pack(side="top", padx=5, pady=5)

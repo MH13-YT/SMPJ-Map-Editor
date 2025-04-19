@@ -35,8 +35,8 @@ from editor_modules.map_layout import (
     save_map_layout_mapdata,
 )
 
-APP_WIDTH = 1150
-APP_HEIGHT = 900
+APP_WIDTH = 1300
+APP_HEIGHT = 1000
 
 general_items = [
     "Stone",

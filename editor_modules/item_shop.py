@@ -30,8 +30,9 @@ class ItemShopEditor:
         phase_frame.pack(fill="x", padx=5, pady=5)
 
         for i in range(1, 7):
-            slot_frame = ttk.LabelFrame(phase_frame, text=f"Slot {i}", width=20)
-            slot_frame.grid(row=0, column=i - 1, padx=4, pady=4, sticky="nsew")
+            phase_frame.columnconfigure(i, weight=1)
+            slot_frame = ttk.LabelFrame(phase_frame, text=f"Slot {i}")
+            slot_frame.grid(row=0, column=i - 1, padx=5, pady=5, sticky="nsew")
 
             slot_frame.grid_columnconfigure(0, weight=1)
 
