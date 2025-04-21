@@ -1,8 +1,9 @@
 import os
 import shutil
 import time
+from tqdm import tqdm
 from pywinauto import Application
-
+from tkinter import messagebox
 def search_in_treeview(treeview, item_name):
     # Liste les enfants du contrôle
     children = treeview.children()
@@ -10,7 +11,6 @@ def search_in_treeview(treeview, item_name):
     for child in children:
         # Vérifie si l'élément est un TreeItem et si son nom correspond
         if child.element_info.control_type == "TreeItem" and child.element_info.name == item_name:
-            print(f"Trouvé l'élément : {item_name}")
             return child  # Retourne l'objet TreeItem trouvé
 
         # Si l'élément est un CheckBox contenant d'autres éléments, exploration récursive
@@ -24,161 +24,138 @@ def search_in_treeview(treeview, item_name):
 def bea_archives_extractor(BASE_PATH, bea_archives):
     CORE_DIR = os.path.join(BASE_PATH, "CORE")
     ROMFS_DIR = os.path.join(BASE_PATH, "ROMFS", "Archive")
-    
-    # Connexion à Switch Toolbox (si son chemin est connu)
-    app = Application(backend="uia").start(os.path.join(BASE_PATH,"Switch Toolbox","Toolbox.exe"))
-    # Attendre que la fenêtre principale s'ouvre
-    app.window(title_re="Toolbox.*").wait("ready", timeout=10)
 
-    # Récupérer la fenêtre principale (le titre changeant, on utilise une regex)
+    print("Lancement de Switch Toolbox...")
+    app = Application(backend="uia").start(os.path.join(BASE_PATH, "Switch Toolbox", "Toolbox.exe"))
     window = app.window(title_re="Toolbox.*")
-    window_exist = False
-    while (window_exist == False):
-        if window.exists():
-            window_exist = True
-            window.set_focus()
+    window.wait("ready", timeout=10)
+    while not window.exists():
+        time.sleep(1)
+    window.set_focus()
 
-    # Boucle pour ouvrir les fichiers un par un
-    for file in bea_archives:
-        # Saisir le chemin du fichier dans la zone de texte (Edit)
+    for file in tqdm(bea_archives, desc="Extraction des archives BEA", unit="fichier"):
         os.makedirs(os.path.join(CORE_DIR, file), exist_ok=True)
         dialog_exist = False
-        while (dialog_exist == False):
-            # Ouvrir la boîte de dialogue d'ouverture de fichier (Ctrl + O)
+        while not dialog_exist:
             window.type_keys("^o")
-            # Générer le chemin complet du fichier
             file_path = os.path.join(ROMFS_DIR, file) + ".bea"
-            # Trouver la fenêtre de dialogue d'ouverture de fichier via la fenêtre enfant de 'window'
-            dialog = window.child_window(control_type="Window", found_index=0)  # On prend le premier contrôle de type "Window" de la fenêtre enfant
+            dialog = window.child_window(control_type="Window", found_index=0)
             if dialog.exists():
                 combo_box = dialog.child_window(auto_id="1148", control_type="ComboBox")
-                # Cibler l'Edit à l'intérieur du ComboBox
                 edit_control = combo_box.child_window(control_type="Edit")
-            
-                # Saisir le chemin du fichier dans la zone de texte (Edit)
                 edit_control.set_text(file_path)
-
-                # Trouver et cliquer sur le bouton "Open"
+                time.sleep(1)
                 open_button = dialog.child_window(auto_id="1", control_type="Button")
                 open_button.click()
                 dialog_exist = True
         time.sleep(2)
-        window.type_keys("^b")  # Ouvrir la boîte de dialogue de sélection de dossier
+        window.type_keys("^b")
         time.sleep(2)
 
-        # Liste toutes les fenêtres ouvertes de l'application
-        windows = app.windows()
-
-        # Cherche une fenêtre contenant un ComboBox ou un Edit (zone de texte)
         folder_dialog = None
-        for w in windows:
+        for w in app.windows():
             try:
                 if w.child_window(control_type="ComboBox").exists() or w.child_window(control_type="Edit").exists():
                     folder_dialog = w
-                    print(f"✅ Boîte de dialogue détectée : {w.window_text()}")
-                    break  # On prend la première fenêtre trouvée
-            except Exception as e:
-                print(f"Erreur en accédant à l'élément : {e}")
-                continue  # Si l'élément n'existe pas ou une erreur se produit, on continue à chercher
+                    break
+            except:
+                continue
 
         if folder_dialog:
-            folder_dialog.print_control_identifiers()  # Liste les éléments cliquables pour vérifier
-            # Cibler l'Edit à l'intérieur du ComboBox
             combo_box = folder_dialog.child_window(control_type="ComboBox")
             edit_control = combo_box.child_window(control_type="Edit")
-            # Saisir le chemin du dossier
             edit_control.set_text(os.path.join(CORE_DIR, file))
-
-            # Trouver et cliquer sur le bouton "OK" ou "Select Folder"
-            ok_button = folder_dialog.child_window(control_type="Button", title="OK")  # Ajuste si nécessaire
+            ok_button = folder_dialog.child_window(control_type="Button", title="OK")
             ok_button.click()
-            print(f"✅ Dossier sélectionné : {os.path.join(CORE_DIR, file)}")
-        else:
-            print("❌ Boîte de dialogue non trouvée !")
 
         time.sleep(2)
-        file_dialog = window.child_window(control_type="Window", found_index=0)  # On prend le premier contrôle de type "Window" de la fenêtre enfant
-        file_dialog_exist = False
-        while (file_dialog_exist == False):
-            if file_dialog.exists():
-                input(file_dialog.print_control_identifiers())
-                combo_box = file_dialog.child_window(auto_id="1148", control_type="ComboBox")
-                # Cibler l'Edit à l'intérieur du ComboBox
-                file_edit_control = combo_box.child_window(control_type="Edit")
-                file_edit_control.set_text(os.path.join(CORE_DIR, file))
+        file_dialog = window.child_window(control_type="Window", found_index=0)
+        while not file_dialog.exists():
+            time.sleep(1)
+        combo_box = file_dialog.child_window(auto_id="1148", control_type="ComboBox")
+        file_edit_control = combo_box.child_window(control_type="Edit")
+        file_edit_control.set_text(os.path.join(CORE_DIR, file))
+        time.sleep(1)
+        file_open_button = file_dialog.child_window(auto_id="1", control_type="Button")
+        file_open_button.click()
 
-                # Trouver et cliquer sur le bouton "Open"
-                file_open_button = file_dialog.child_window(auto_id="1", control_type="Button")
-                file_open_button.click()
-                file_dialog_exist = True
+import os
+import shutil
+import time
+from tqdm import tqdm
+from pywinauto.application import Application
+from tkinter import messagebox
 
 def bea_archives_repacker(instructions, BASE_PATH, OUTPUT_DIR):
     ROMFS_DIR = os.path.join(BASE_PATH, "ROMFS")
-    # Connexion à Switch Toolbox (si son chemin est connu)
-    app = Application(backend="uia").start(os.path.join(BASE_PATH,"Switch Toolbox","Toolbox.exe"))
-    # Attendre que la fenêtre principale s'ouvre
-    app.window(title_re="Toolbox.*").wait("ready", timeout=10)
+    os.makedirs(os.path.join(OUTPUT_DIR, "romfs", "Archive"), exist_ok=True)
 
-    # Récupérer la fenêtre principale (le titre changeant, on utilise une regex)
+    # Confirmation message before starting the process
+    proceed = messagebox.askyesno(
+        "BEA Repacker (Confirmation)",
+        "The BEA Repacker will launch Switch Toolbox and allow SMPJ Map Editor to control the window.\nPlease do not touch the screen during the process.\nSMPJ Map Editor's terminal output will show you the progress.\n\nDo you want to continue?"
+    )
+    if not proceed:
+        print("Operation cancelled by the user.")
+        return 1  # Code 1: User cancelled the operation
+
+    print("Copying BEA files to the output directory...")
+    for file in tqdm(instructions.keys(), desc="Copying files", unit="file"):
+        shutil.copy(f"{os.path.join(ROMFS_DIR, 'Archive', file)}.bea", f"{os.path.join(OUTPUT_DIR, 'romfs', 'Archive', file)}.bea")
+
+    print("Launching Switch Toolbox...")
+    app = Application(backend="uia").start(os.path.join(BASE_PATH, "Switch Toolbox", "Toolbox.exe"))
     window = app.window(title_re="Toolbox.*")
-    window_exist = False
-    while (window_exist == False):
-        if window.exists():
-            window_exist = True
-            window.set_focus()
+    window.wait("ready", timeout=10)
+    while not window.exists():
+        time.sleep(1)
+    window.set_focus()
 
-
-    for file in instructions.keys():
-        # Créer les dossiers nécessaires dans le chemin de destination
-        os.makedirs(os.path.join(OUTPUT_DIR,"romfs","Archive"), exist_ok=True)
-        # Copier le fichier
-        shutil.copy(f"{os.path.join(ROMFS_DIR,'Archive',file)}.bea", f"{os.path.join(OUTPUT_DIR,'romfs','Archive',file)}.bea")
-
-    # Boucle pour ouvrir les fichiers un par un
-    for file in instructions.keys():
-        # Ouvrir la boîte de dialogue d'ouverture de fichier (Ctrl + O)
+    print("Opening and modifying BEA files...")
+    for file in tqdm(instructions.keys(), desc="Modifying BEA files", unit="file"):
         window.type_keys("^o")
-        # Générer le chemin complet du fichier
         file_path = os.path.join(OUTPUT_DIR, "romfs", "Archive", file) + ".bea"
-        # Trouver la fenêtre de dialogue d'ouverture de fichier via la fenêtre enfant de 'window'
-        dialog = window.child_window(control_type="Window", found_index=0)  # On prend le premier contrôle de type "Window" de la fenêtre enfant
-        dialog_exist = False
-        while (dialog_exist == False):
-            if dialog.exists():
-                combo_box = dialog.child_window(auto_id="1148", control_type="ComboBox")
-                # Cibler l'Edit à l'intérieur du ComboBox
-                edit_control = combo_box.child_window(control_type="Edit")
-            
-                # Saisir le chemin du fichier dans la zone de texte (Edit)
-                edit_control.set_text(file_path)
+        dialog = window.child_window(control_type="Window", found_index=0)
+        while not dialog.exists():
+            time.sleep(1)
+        combo_box = dialog.child_window(auto_id="1148", control_type="ComboBox")
+        edit_control = combo_box.child_window(control_type="Edit")
+        edit_control.set_text(file_path)
+        open_button = dialog.child_window(auto_id="1", control_type="Button")
+        open_button.click()
 
-                # Trouver et cliquer sur le bouton "Open"
-                open_button = dialog.child_window(auto_id="1", control_type="Button")
-                open_button.click()
-                dialog_exist = True
         window.type_keys("^p")
         tree_view = window.child_window(control_type="Tree", found_index=0)
-        for files_instruction in instructions[file]:
+        for files_instruction in tqdm(instructions[file], desc=f"Replacing files in {file}.bea", unit="file"):
             try:
                 fichier = search_in_treeview(tree_view, files_instruction["destination"])
-                if fichier != None:
+                if fichier:
                     fichier.select()
                     window.type_keys("^b")
-                    file_dialog = window.child_window(control_type="Window", found_index=0)  # On prend le premier contrôle de type "Window" de la fenêtre enfant
-                    file_dialog_exist = False
-                    while (file_dialog_exist == False):
-                        if dialog.exists():
-                            combo_box = file_dialog.child_window(auto_id="1148", control_type="ComboBox")
-                            # Cibler l'Edit à l'intérieur du ComboBox
-                            edit_control = combo_box.child_window(control_type="Edit")
-                        
-                            # Saisir le chemin du fichier dans la zone de texte (Edit)
-                            edit_control.set_text(files_instruction["source"])
-
-                            # Trouver et cliquer sur le bouton "Open"
-                            open_button = file_dialog.child_window(auto_id="1", control_type="Button")
-                            open_button.click()
-                            file_dialog_exist = True
+                    file_dialog = window.child_window(control_type="Window", found_index=0)
+                    while not file_dialog.exists():
+                        time.sleep(1)
+                    combo_box = file_dialog.child_window(auto_id="1148", control_type="ComboBox")
+                    edit_control = combo_box.child_window(control_type="Edit")
+                    edit_control.set_text(files_instruction["source"])
+                    open_button = file_dialog.child_window(auto_id="1", control_type="Button")
+                    open_button.click()
             except Exception as e:
-                continue
-        window.type_keys("^q")
+                messagebox.showerror("Error", f"Error during replacement: {str(e)}")
+                print(f"Error during replacement: {e}")
+                return 2  # Code 2: Replacement error
+
+    print("Saving modifications...")
+    window.type_keys("^s")
+    for file in tqdm(instructions.keys(), desc="Saving files", unit="file"):
+        save_dialog = window.child_window(control_type="Window", found_index=0)
+        while not save_dialog.exists():
+            time.sleep(1)
+        buttons = save_dialog.children(control_type="Button")
+        for btn in buttons:
+            button_text = btn.texts()
+            if button_text and button_text[0] == "OK":
+                btn.click()
+                break
+    window.close()
+    return 0  # Code 0: Success

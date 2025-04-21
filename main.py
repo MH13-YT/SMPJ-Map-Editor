@@ -164,7 +164,7 @@ def create_workspace():
 def main_interface():
     root = tk.Tk()
     root.title("SMPJ Map Editor")
-    root.geometry("350x250")
+    root.geometry("350x280")
     root.resizable(False, False)
 
     selected_workspace = tk.StringVar()
@@ -200,6 +200,11 @@ def main_interface():
             selected_workspace.set(workspace)
             workspace_path = os.path.join(WORKSPACE_DIR, selected_workspace.get())
             output_path = os.path.join(OUTPUT_DIR, selected_workspace.get())
+            packages_path_list = [
+                os.path.join(output_path,"Simple Mod Manager (SMM)","mods","Super Mario Party Jamboree",selected_workspace.get(),"contents","0100965017338000","romfs",),
+                os.path.join(output_path,"RYUJINX","mods","contents","0100965017338000",selected_workspace.get(),"romfs"),
+                os.path.join(output_path,"YUZU","load","0100965017338000",selected_workspace.get(),"romfs"),
+            ]
             # Supprimer le dossier de destination s'il existe déjà, puis le recréer
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
@@ -218,7 +223,16 @@ def main_interface():
                         if entry[0] not in instructions:
                             instructions[entry[0]] = []
                         instructions[entry[0]].append({"source": modified_file_path, "destination": entry[-1]})
-            bea_archives_repacker(instructions, BASE_PATH, workspace_path, OUTPUT_DIR)
+            repack = bea_archives_repacker(instructions, BASE_PATH, output_path)
+            match repack:
+                case 0:
+                    for folder in packages_path_list:
+                        shutil.copytree(os.path.join(output_path,"romfs"), folder)
+                    messagebox.showinfo("Finished","Exportation finished")
+                case 1:
+                    messagebox.showwarning("Aborted", "BEA Repack Aborted by User : Aborting Exportation")    
+                case 2:
+                    messagebox.showerror("Error", "An error occured in BEA Repack : Aborting Exportation")
                         
         else:
             messagebox.showerror("Error", "Please select a valid workspace.")
@@ -239,14 +253,18 @@ def main_interface():
     combobox.pack(pady=5, fill=tk.X, padx=20)
     update_workspace_list()
 
-    ttk.Button(root, text="Load Workspace", command=load_workspace, width=100).pack(
+    tk.Button(root, text="Load Workspace", command=load_workspace, width=100).pack(
         pady=5
     )
 
-    ttk.Button(root, text="Export Workspace", command=export_workspace, width=100).pack(
-        pady=5
-    )
-
+    if (os.path.exists(os.path.join(BASE_PATH,"Switch Toolbox","Toolbox.exe")) and os.path.isdir(ROMFS_DIR) and bool(os.listdir(ROMFS_DIR))):
+        tk.Button(root, text="Export Workspace", command=export_workspace, width=100).pack(
+            pady=5
+        )
+    else:
+        tk.Button(root, text="Export Workspace", command=export_workspace, width=100,state="disabled").pack(
+            pady=5
+        )
     root.mainloop()
 
     return (
