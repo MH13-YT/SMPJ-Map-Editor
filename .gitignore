@@ -1,5 +1,7 @@
 output
 CORE
+ROMFS
+Switch Toolbox
 workspace
 __pycache__
 Switch Toolbox
