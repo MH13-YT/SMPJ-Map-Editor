@@ -111,8 +111,17 @@ def correct_and_verify_core_integrity(STE = False):
             f"{valid_checksums_text}\n"
             )
             if (user_choice == True):
-                bea_archives_extractor(BASE_PATH,REQUIRED_BEA_FILES)
-                correct_and_verify_core_integrity(True)
+                extractor = bea_archives_extractor(BASE_PATH,REQUIRED_BEA_FILES)
+                match extractor:
+                    case 0:
+                        messagebox.showinfo("Finished", "BEA Extraction is complete, please restart SMPJ Map Editor")
+                        sys.exit("BEA Extraction is complete, please restart SMPJ Map Editor")
+                    case 1:
+                        messagebox.showwarning("Extraction Error", "An error occured into the extraction, a required BEA File is missing")
+                        raise RuntimeError("BEA Extraction Error : An error occured into the extraction, a required BEA File is missing")  
+                    case 2:
+                        messagebox.showerror("Extraction Error", "An error occured into the extraction, an error occured in one BEA File extraction")
+                        raise RuntimeError("BEA Extraction Error : An error occured into the extraction, an error occured in one BEA File extraction")
         else:
             messagebox.showerror(
                 "Original file integrity check failed",
@@ -123,7 +132,7 @@ def correct_and_verify_core_integrity(STE = False):
                 f"- (Windows Only) Copy Switch Toolbox binaries files into 'Switch Toolbox' Folder and the content of the romfs of Super Mario Party Jamboree into the ROMFS Folder (Not ROMFS/romfs)\n"
                 f"- Use Switch Toolbox to extract bd~bd00.nx.bea to bd~bd07.nx.bea to his related folders on the CORE folder\n"
                 "\n"
-                f"Actual checksum: {calculated_checksum}",
+                f"Actual checksum: {calculated_checksum}"
                 f"{valid_checksums_text}\n"
             )
 
@@ -164,7 +173,7 @@ def create_workspace():
 def main_interface():
     root = tk.Tk()
     root.title("SMPJ Map Editor")
-    root.geometry("350x280")
+    root.geometry("420x340")
     root.resizable(False, False)
 
     selected_workspace = tk.StringVar()
