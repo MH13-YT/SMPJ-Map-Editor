@@ -36,7 +36,7 @@ jobs:
 
       - name: Build with console
         run: |
-          pyinstaller --onefile main.py --name SMPJ-Map-Editor_${{ runner.os }} (CMD Mode)
+          pyinstaller --onefile main.py --name SMPJ-Map-Editor_${{ runner.os }}-(CMD Mode)
 
       - name: Build without console
         run: |
@@ -47,5 +47,5 @@ jobs:
         with:
           name: SMPJ-Map-Editor-${{ runner.os }}
           path: |
-            dist/SMPJ-Map-Editor_${{ runner.os }} (CMD Mode)*
+            dist/SMPJ-Map-Editor_${{ runner.os }}-(CMD Mode)*
             dist/SMPJ-Map-Editor_${{ runner.os }}*
