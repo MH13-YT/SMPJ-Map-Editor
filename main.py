@@ -1,5 +1,9 @@
 import filecmp
 import json
+import requests
+import zipfile
+import os
+from io import BytesIO
 import os
 import sys
 import hashlib
@@ -99,7 +103,7 @@ def correct_and_verify_core_integrity(STE = False):
             valid_checksum = True
             supported_versions = EXPECTED_CORE_CHECKSUMS[CHECKSUM]
     if (valid_checksum == False):
-        if (STE == False and os.path.exists(os.path.join(BASE_PATH,"Switch Toolbox","Toolbox.exe")) and os.path.isdir(ROMFS_DIR) and bool(os.listdir(ROMFS_DIR))):
+        if (STE == False and os.path.isdir(ROMFS_DIR) and os.listdir(ROMFS_DIR) ):
             user_choice = messagebox.askyesno(
             "Original file integrity check failed",
             f"SMPJ Map Editor a besoin des fichiers du jeu en état non compressé pour fonctionner.\n"
@@ -111,17 +115,42 @@ def correct_and_verify_core_integrity(STE = False):
             f"{valid_checksums_text}\n"
             )
             if (user_choice == True):
-                extractor = bea_archives_extractor(BASE_PATH,REQUIRED_BEA_FILES)
-                match extractor:
-                    case 0:
-                        messagebox.showinfo("Finished", "BEA Extraction is complete, please restart SMPJ Map Editor")
-                        sys.exit("BEA Extraction is complete, please restart SMPJ Map Editor")
-                    case 1:
-                        messagebox.showwarning("Extraction Error", "An error occured into the extraction, a required BEA File is missing")
-                        raise RuntimeError("BEA Extraction Error : An error occured into the extraction, a required BEA File is missing")  
-                    case 2:
-                        messagebox.showerror("Extraction Error", "An error occured into the extraction, an error occured in one BEA File extraction")
-                        raise RuntimeError("BEA Extraction Error : An error occured into the extraction, an error occured in one BEA File extraction")
+                switch_toolbox = True
+                if (not os.path.exists(os.path.join(TOOLBOX_DIR,"Toolbox.exe"))):
+                    switch_toolbox = False
+                    switch_toolbox_choice = messagebox.askyesno(
+                    "Switch Toolbox Missing",
+                    f"SMPJ Map Editor a besoin de switch toolbox pour effectuer l'extraction BEA\n"
+                    f"https://github.com/KillzXGaming/Switch-Toolbox/releases/download/Latest/Toolbox-Latest.zip\n"
+                    "\n"
+                    "Do you want to download it ?\n"
+                    )
+                    if (switch_toolbox_choice == True):
+                        # URL du fichier zip
+                        url = "https://github.com/KillzXGaming/Switch-Toolbox/releases/download/Latest/Toolbox-Latest.zip"
+
+                        # Télécharger le fichier zip
+                        print("Téléchargement de switch toolbox en cours...")
+                        response = requests.get(url)
+                        response.raise_for_status()  # Lève une erreur si le téléchargement échoue
+
+                        # Extraire le fichier zip
+                        print("Extraction de switch toolbox en cours...")
+                        with zipfile.ZipFile(BytesIO(response.content)) as zip_ref:
+                            zip_ref.extractall(TOOLBOX_DIR)
+                            switch_toolbox = True
+                if (switch_toolbox == True):
+                    extractor = bea_archives_extractor(BASE_PATH,REQUIRED_BEA_FILES)
+                    match extractor:
+                        case 0:
+                            messagebox.showinfo("Finished", "BEA Extraction is complete, please restart SMPJ Map Editor, if Switch toolbox is opened, you can close it")
+                            sys.exit("BEA Extraction is complete, please restart SMPJ Map Editor, you can close it")
+                        case 1:
+                            messagebox.showwarning("Extraction Error", "An error occured into the extraction, a required BEA File is missing")
+                            raise RuntimeError("BEA Extraction Error : An error occured into the extraction, a required BEA File is missing")  
+                        case 2:
+                            messagebox.showerror("Extraction Error", "An error occured into the extraction, an error occured in one BEA File extraction")
+                            raise RuntimeError("BEA Extraction Error : An error occured into the extraction, an error occured in one BEA File extraction")
         else:
             messagebox.showerror(
                 "Original file integrity check failed",
@@ -135,7 +164,6 @@ def correct_and_verify_core_integrity(STE = False):
                 f"Actual checksum: {calculated_checksum}"
                 f"{valid_checksums_text}\n"
             )
-
             raise ValueError(
                 f"Original file integrity check failed.\n"
                 f"- (Windows Only) Copy Switch Toolbox binaries files into 'Switch Toolbox' Folder and the content of the romfs of Super Mario Party Jamboree into the ROMFS Folder (Not ROMFS/romfs)\n"
@@ -148,6 +176,8 @@ def correct_and_verify_core_integrity(STE = False):
 
 def ensure_directories():
     os.makedirs(WORKSPACE_DIR, exist_ok=True)
+    os.makedirs(TOOLBOX_DIR, exist_ok=True)
+    os.makedirs(ROMFS_DIR, exist_ok=True)
     correct_and_verify_core_integrity()
 
 
@@ -199,6 +229,8 @@ def main_interface():
         workspace = combobox.get()
         if workspace in update_workspace_list():
             selected_workspace.set(workspace)
+            app = JamboreeMapEditor(workspace_path)
+            app.mainloop()
             root.destroy()
         else:
             messagebox.showerror("Error", "Please select a valid workspace.")
@@ -286,9 +318,8 @@ if __name__ == "__main__":
     try:
         ensure_directories()
         workspace_path = main_interface()
-        if workspace_path:
-            app = JamboreeMapEditor(workspace_path)
-            app.mainloop()
+
+
     except Exception as e:
         traceback.print_exc()
         print("===================================")
