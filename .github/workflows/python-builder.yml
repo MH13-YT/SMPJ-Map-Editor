@@ -42,21 +42,10 @@ jobs:
         run: |
           pyinstaller --onefile --noconsole main.py --name app_no_console_${{ runner.os }}
 
-      - name: Prepare release assets
-        run: |
-          mkdir release
-          cp dist/app_with_console_${{ runner.os }}* release/
-          cp dist/app_no_console_${{ runner.os }}* release/
-        shell: bash
-
-      - name: Upload release assets
-        uses: softprops/action-gh-release@v2
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: Release ${{ github.ref_name }} - ${{ github.sha }} (${{ matrix.os }})
-          tag_name: build-${{ github.run_number }}
-          prerelease: ${{ github.ref_name == 'canary' }}
-          files: |
-            release/app_with_console_${{ runner.os }}*
-            release/app_no_console_${{ runner.os }}*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: pyinstaller-build-${{ runner.os }}
+          path: |
+            dist/app_with_console_${{ runner.os }}*
+            dist/app_no_console_${{ runner.os }}*
