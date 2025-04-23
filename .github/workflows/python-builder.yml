@@ -36,16 +36,16 @@ jobs:
 
       - name: Build with console
         run: |
-          pyinstaller --onefile main.py --name app_with_console_${{ runner.os }}
+          pyinstaller --onefile main.py --name SMPJ-Map-Editor_${{ runner.os }} (With CMD)
 
       - name: Build without console
         run: |
-          pyinstaller --onefile --noconsole main.py --name app_no_console_${{ runner.os }}
+          pyinstaller --onefile --noconsole main.py --name SMPJ-Map-Editor_${{ runner.os }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: pyinstaller-build-${{ runner.os }}
+          name: SMPJ-Map-Editor-${{ runner.os }}
           path: |
-            dist/app_with_console_${{ runner.os }}*
-            dist/app_no_console_${{ runner.os }}*
+            dist/SMPJ-Map-Editor_${{ runner.os }} (With CMD)*
+            dist/SMPJ-Map-Editor_${{ runner.os }}*

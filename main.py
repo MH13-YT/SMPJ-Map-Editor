@@ -229,6 +229,7 @@ def main_interface():
         workspace = combobox.get()
         if workspace in update_workspace_list():
             selected_workspace.set(workspace)
+            workspace_path = os.path.join(WORKSPACE_DIR, selected_workspace.get())
             app = JamboreeMapEditor(workspace_path)
             app.mainloop()
             root.destroy()
