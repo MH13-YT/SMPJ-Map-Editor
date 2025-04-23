@@ -1,4 +1,4 @@
-name: Build and Release (PyInstaller Matrix)
+name: Python Builder
 
 on:
   push:
