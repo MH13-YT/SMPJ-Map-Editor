@@ -47,7 +47,6 @@ jobs:
           mkdir release
           cp dist/app_with_console_${{ runner.os }}* release/
           cp dist/app_no_console_${{ runner.os }}* release/
-          zip -r release/source_code_${{ runner.os }}.zip .
         shell: bash
 
       - name: Upload release assets
@@ -59,6 +58,5 @@ jobs:
           files: |
             release/app_with_console_${{ runner.os }}*
             release/app_no_console_${{ runner.os }}*
-            release/source_code_${{ runner.os }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
