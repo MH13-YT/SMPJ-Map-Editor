@@ -1,1 +1,4 @@
-matplotlib==3.9.2
+pythonnet>=3.0.5
+tqdm>=4.66.5
+matplotlib>=3.9.2
+appdirs>=1.4.4

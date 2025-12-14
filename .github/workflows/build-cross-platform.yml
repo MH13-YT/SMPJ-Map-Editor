@@ -1,0 +1,109 @@
+# .github/workflows/build-cross-platform.yml
+name: Build SMPJ Map Editor (Console + Windowed)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python (use .python-version)
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: '.python-version'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build Windows Console
+      run: pyinstaller --noconfirm --onefile --console --name "SMPJ Map Editor (Console)" main.py
+    
+    - name: Build Windows Windowed
+      run: pyinstaller --noconfirm --onefile --windowed --name "SMPJ Map Editor" main.py
+    
+    - name: Upload Windows Console
+      uses: actions/upload-artifact@v4
+      with:
+        name: SMPJ_Map_Editor-Windows-Console
+        path: dist/SMPJ Map Editor (Console).exe
+    
+    - name: Upload Windows Windowed
+      uses: actions/upload-artifact@v4
+      with:
+        name: SMPJ_Map_Editor-Windows
+        path: dist/SMPJ Map Editor.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python (use .python-version)
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: '.python-version'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build Linux Console
+      run: pyinstaller --noconfirm --onefile --console --name "SMPJ Map Editor (Console)" main.py
+    
+    - name: Build Linux Windowed
+      run: pyinstaller --noconfirm --onefile --windowed --name "SMPJ Map Editor" main.py
+    
+    - name: Upload Linux Console
+      uses: actions/upload-artifact@v4
+      with:
+        name: SMPJ_Map_Editor-Linux-Console
+        path: dist/SMPJ Map Editor (Console)
+    
+    - name: Upload Linux Windowed
+      uses: actions/upload-artifact@v4
+      with:
+        name: SMPJ_Map_Editor-Linux
+        path: dist/SMPJ Map Editor
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python (use .python-version)
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: '.python-version'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build macOS Console
+      run: pyinstaller --noconfirm --onefile --console --name "SMPJ Map Editor (Console)" main.py
+    
+    - name: Build macOS Windowed
+      run: pyinstaller --noconfirm --onefile --windowed --name "SMPJ Map Editor" main.py
+    
+    - name: Upload macOS Console
+      uses: actions/upload-artifact@v4
+      with:
+        name: SMPJ_Map_Editor-macOS-Console
+        path: dist/SMPJ Map Editor (Console)
+    
+    - name: Upload macOS Windowed
+      uses: actions/upload-artifact@v4
+      with:
+        name: SMPJ_Map_Editor-macOS
+        path: dist/SMPJ Map Editor
