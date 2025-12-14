@@ -1,9 +1,6 @@
 import filecmp
 import json
-import requests
-import zipfile
 import os
-from io import BytesIO
 import os
 import sys
 import hashlib

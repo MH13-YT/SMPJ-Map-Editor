@@ -17,6 +17,15 @@ from tqdm import tqdm
 
 import zstandard as zstd  # pip install zstandard
 import gc
+import io
+
+# FIX PyInstaller --windowed
+if not sys.stdin:
+    sys.stdin = io.StringIO()
+if not sys.stdout:
+    sys.stdout = io.StringIO()
+if not sys.stderr:
+    sys.stderr = io.StringIO()
 
 # Reusable Zstd decompressor
 _zstd_decompressor = zstd.ZstdDecompressor()
