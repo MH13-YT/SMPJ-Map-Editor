@@ -1,0 +1,51 @@
+name: Python Builder
+
+on:
+  push:
+    branches:
+      - main
+      - canary
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+          # tkinter installation sur Linux (et éventuellement sur macOS si besoin)
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+            sudo apt-get update || true
+            sudo apt-get install -y python3-tk || true
+          fi
+        shell: bash
+
+      - name: Build with console
+        run: |
+          pyinstaller --onefile main.py --name SMPJ-Map-Editor_${{ runner.os }}-cmd
+
+      - name: Build without console
+        run: |
+          pyinstaller --onefile --noconsole main.py --name SMPJ-Map-Editor_${{ runner.os }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SMPJ-Map-Editor-${{ runner.os }}
+          path: |
+            dist/SMPJ-Map-Editor_${{ runner.os }}-cmd*
+            dist/SMPJ-Map-Editor_${{ runner.os }}*

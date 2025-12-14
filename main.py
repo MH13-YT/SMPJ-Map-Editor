@@ -1,5 +1,9 @@
 import filecmp
 import json
+import requests
+import zipfile
+import os
+from io import BytesIO
 import os
 import sys
 import hashlib
@@ -190,6 +194,8 @@ def correct_and_verify_core_integrity(STE=False):
 
 def ensure_directories():
     os.makedirs(WORKSPACE_DIR, exist_ok=True)
+    os.makedirs(TOOLBOX_DIR, exist_ok=True)
+    os.makedirs(ROMFS_DIR, exist_ok=True)
     correct_and_verify_core_integrity()
 
 def create_workspace():
