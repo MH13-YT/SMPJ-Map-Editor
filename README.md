@@ -1,36 +1,111 @@
 # SMPJ Map Editor
 
-SMPJ Map Editor is a data editor for the game Super Mario Party Jamboree
+**SMPJ Map Editor** is a data editor for the game **Super Mario Party Jamboree**.
+## Disclaimer
 
-**THIS TOOL ISN'T A MAP MAKER or a variant of Party Studio**
-it will **never** allow you to modify the position of the squares on the board, or the textures of the maps, this will require a 3D editor and will be much more complex to develop it should be considered as a **rudimentary map editor** allowing you to wait until a complete editor was developed or [Party Studio](https://github.com/MapStudioProject/Party-Studio) was updated
+This software is a **fan-made tool** developed for educational and modding purposes.  
+It is **not affiliated with Nintendo** or the developers of *Super Mario Party Jamboree*.  
+Use at your own risk.
+
+**⚠️ THIS TOOL IS NOT A MAP MAKER**  
+> It is **not** a variant or fork of [Party Studio](https://github.com/MapStudioProject/Party-Studio).  
+> It will **never** allow you to modify the position of the board spaces or the map textures.  
+> These features would require a full 3D editor and are far more complex to implement.  
+> This software should be considered a **rudimentary map editor**, meant to help users wait until a full-fledged editor or *Party Studio* update becomes available.
+
+---
+
+## Usage in Mods
+
+You are free to use SMPJ Map Editor to create board modifications **without any restrictions**.  
+The tool outputs are fully yours to distribute in your mods.
+
+**Project credit is greatly appreciated** (though not legally required):  
+`Board data edited with SMPJ Map Editor`  
+**[GitHub](https://github.com/MH13-YT/SMPJ-Map-Editor)** | **[GameBanana](https://gamebanana.com/wips/88664)**
+
+---
 
 ## Features
-### WARNING
-Although this tool integrates certain security it is and remains in the **EXPERIMENTAL** state
-therefore it is intended for users with a minimum of knowledge of switch modding as well as Super Mario Party Jamboree modding
 
-Since **version 0.0.3** this software use pip dependancy, you can use `pip install -r requirements.txt` for installing it
-This change comes following the addition of *map editing functionality* which requires the python [matplotlib](https://pypi.org/project/matplotlib/) module
+### ⚠️ WARNING
+
+Since **version 1.1.0**, the software uses **pythonnet** (.NET/Mono) along with **BezelEngineArchive_Lib** to extract and repack Bezel Engine Archive files.
+> **Note:**  
+> This tool relies on an **external C# library**:  
+> [KillzXGaming/BEA-Library-Editor – BezelEngineArchive_Lib](https://github.com/KillzXGaming/BEA-Library-Editor/tree/master/BezelEngineArchive_Lib)  
+> This library is **automatically downloaded on the first launch** of the application.
+> **Implemented for Windows with .NET 8** (tested and working). **Mono support implemented but untested.**
+
+---
 
 ### Current Features
-- Edit items obtainable in the shops (**Only Koopa and Kamek**, it cannot edit Rainbow Galleria specific shop)
-- Edit items obtainable by the item bag
-- Edit items obtainable by the item case (can also remove object minigames option)
-- Edit events (Lucky, Unlucky and Bowser)
-- Edit hidden blocks
-- Edit map (Change types (Blue/Red/Lucky/Unlucky/Bowser/Chance Time...)
+
+- Edit items obtainable in shops (**Koopa and Kamek shops only**, Rainbow Galleria shops is not supported).  
+- Edit items obtainable from **Item Bags**.  
+- Edit items obtainable from **Item Cases** (can also remove item minigames).  
+- Edit **events** (Lucky, Unlucky, Bowser).  
+- Edit **hidden blocks**.  
+- Edit **board spaces** (change types such as Blue, Red, Lucky, Unlucky, Bowser, Chance Time, etc.).
+
+---
 
 ### Planned Features
-No Features planned actually
 
-### Features in mind
-- Change paths
-- Add support for Boo spots
-- Add support for event boxes
+No new features are planned at the moment.
+
+---
+
+### Features In Mind
+
+- Change paths.  
+- Add support for **Boo spaces**.
+- Add support for **Star spaces**.
+
+---
 
 ## How to Install
-### Prerequisites
-- A complete dump of the Super Mario Party Jamboree romfs file, google is your friend for obtain it
-- Switch Toolbox (for extract files from "bd\~bd00.nx.bea to bd\~bd07.nx.bea" Archive and place the files on a folder named "bd\~bd00.nx" to "bd\~bd07.nx" in the CORE folder on the same place than `main.py`)
-- Python with Tinkerer/Tk installed (The software is developed and tested with python 3.12)
+
+### Prerequistes
+- A **complete dump** of the *Super Mario Party Jamboree* romfs folder *(you must obtain this by yourself)*.  
+- Internet connection enabled during the first start so the tool can **automatically download the C# library**.
+
+### Option 1 — Using Releases (Recommended)
+
+1. Download the latest version from the project’s **[Releases](https://github.com/.../releases)** page.  
+2. Extract the downloaded archive.  
+3. Run the included `.exe` file.
+
+> ⚠️ **Note:** builds created with **PyInstaller** can be flagged as **false positives** by some antivirus software.  
+> The project is fully open-source — feel free to inspect the code before running it.
+
+---
+
+### Option 2 — Run from Source Code
+
+#### Additional Prerequisites
+- **Python** installed with **Tkinter** (required to launch the GUI if running from source).  
+  Check the `.python-version` file for the latest supported Python version.  
+
+#### Install dependencies
+
+Use: pip install -r requirements.txt
+
+---
+
+## Credits
+
+- **KillzXGaming** - for [BezelEngineArchive_Lib](https://github.com/KillzXGaming/BEA-Library-Editor/tree/master/BezelEngineArchive_Lib) (GPLv3)
+
+---
+
+### License
+
+This project is licensed under the terms of the **GNU General Public License v3 (GPLv3)**.  
+You are free to use, modify, and distribute this software under the same license terms.  
+See the file [LICENSE](./LICENSE) for the complete text of the GPLv3.
+
+Because this project interfaces directly with the **BezelEngineArchive_Lib** library (licensed under GPLv3),  
+SMPJ Map Editor adopts the same license to maintain compatibility.
+
+---

@@ -372,11 +372,6 @@ def show_main_menu(current_root=None):
     # Create UI elements
     ttk.Label(root, text="SMPJ Map Editor", font=("Arial", 14)).pack(pady=5)
     ttk.Label(root, text="(This is not a map maker)", font=("Arial", 10)).pack(pady=0)
-    ttk.Label(
-        root,
-        text="(WARNING : This tool is in experimental state)",
-        font=("Arial", 10),
-    ).pack(pady=5)
     ttk.Button(
         root, text="Create a New Workspace", command=create_workspace_wrapper, width=100
     ).pack(pady=5)

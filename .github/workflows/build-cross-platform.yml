@@ -1,5 +1,5 @@
 # .github/workflows/build-cross-platform.yml
-name: Build SMPJ Map Editor (Console + Windowed)
+name: Build SMPJ Map Editor
 
 on:
   push:
